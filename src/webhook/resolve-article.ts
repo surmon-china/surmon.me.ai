@@ -24,9 +24,8 @@ export interface Article {
   created_at: string
 }
 
-const getArticleSummary = (article: Article) => {
-  const aiSummary = article.extras.find((item) => item.key === 'ai-summary-content')
-  return aiSummary?.value || article.summary
+const getArticleUrl = (articleId: number): string => {
+  return `https://surmon.me/article/${articleId}`
 }
 
 const getArticleMarkdownFileName = (articleId: number): string => {
@@ -35,15 +34,19 @@ const getArticleMarkdownFileName = (articleId: number): string => {
 
 const transformArticleToMarkdown = (article: Article): string => {
   const safeStr = (str?: string) => (str || '').replace(/"/g, '\\"')
+  const getSummary = (article: Article) => {
+    const aiSummary = article.extras.find((item) => item.key === 'ai-summary-content')
+    return aiSummary?.value || article.summary
+  }
 
   return `---
 id: ${article.id}
 title: "${safeStr(article.title)}"
-summary: "${getArticleSummary(article)}"
-categories: [${article.categories.map((i) => i.slug).join(', ')}]
-tags: [${article.tags.map((i) => i.slug).join(', ')}]
+summary: "${getSummary(article)}"
+categories: [${article.categories.map((i) => `"${i.slug}"`).join(', ')}]
+tags: [${article.tags.map((i) => `"${i.slug}"`).join(', ')}]
 date: "${article.created_at || new Date().toISOString()}"
-url: "https://surmon.me/article/${article.id}"
+url: "${getArticleUrl(article.id)}"
 ---
 
 # ${article.title}
@@ -69,10 +72,10 @@ export const upsertArticlesToBucket = async (articles: Article[], env: Bindings)
     await env.RAG_BUCKET.put(fileName, newMarkdown, {
       customMetadata: {
         type: 'article',
-        title: newArticle.title || '',
-        summary: getArticleSummary(newArticle),
+        id: String(newArticle.id),
+        title: newArticle.title,
         thumbnail: newArticle.thumbnail,
-        url: `https://surmon.me/article/${newArticle.id}`
+        url: getArticleUrl(newArticle.id)
       }
     })
 
