@@ -1,8 +1,18 @@
 {
   "name": "surmon.me.ai",
+  "version": "0.0.1",
+  "description": "AI service for Surmon.me blog",
+  "author": "Surmon",
+  "license": "MIT",
+  "homepage": "https://github.com/surmon-china/surmon.me.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/surmon-china/surmon.me.ai.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "types": "wrangler types",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
@@ -10,6 +20,6 @@
     "hono": "^4.x"
   },
   "devDependencies": {
-    "wrangler": "^4.x"
+    "wrangler": "^4.69.0"
   }
 }
