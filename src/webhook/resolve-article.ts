@@ -40,6 +40,7 @@ const transformArticleToMarkdown = (article: Article): string => {
   }
 
   return `---
+
 id: ${article.id}
 title: "${safeStr(article.title)}"
 summary: "${getSummary(article)}"
@@ -47,6 +48,7 @@ categories: [${article.categories.map((i) => `"${i.slug}"`).join(', ')}]
 tags: [${article.tags.map((i) => `"${i.slug}"`).join(', ')}]
 date: "${article.created_at || new Date().toISOString()}"
 url: "${getArticleUrl(article.id)}"
+
 ---
 
 # ${article.title}
