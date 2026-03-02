@@ -15,8 +15,10 @@
   "observability": {
     "logs": {
       "enabled": true,
-      "invocation_logs": true,
-      "persist": false
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false
     }
   }
 }
