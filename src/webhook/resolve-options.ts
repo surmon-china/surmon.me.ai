@@ -20,7 +20,7 @@ const transformOptionsToMarkdown = (options: NodePressOptions): string => {
     `Subtitle: ${options.sub_title}`,
     `Description: ${options.description}`,
     `Keywords: ${(options.keywords || []).join(', ')}`,
-    `\n## Blogger Statement & FAQ\n`,
+    `\n---\n`,
     options.statement || 'No statement provided.'
   ].join('\n')
 }
