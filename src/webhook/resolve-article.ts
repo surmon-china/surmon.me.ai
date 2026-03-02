@@ -25,7 +25,7 @@ export interface Article {
 }
 
 const getArticleSummary = (article: Article) => {
-  const aiSummary = article.extras.find((item) => item.value === 'ai-summary-content')
+  const aiSummary = article.extras.find((item) => item.key === 'ai-summary-content')
   return aiSummary?.value || article.summary
 }
 
