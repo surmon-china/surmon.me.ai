@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "surmon-me-ai",
   "main": "src/index.ts",
-  "compatibility_date": "2026-03-03",
+  "compatibility_date": "2026-03-01",
   "ai": {
     "binding": "AI"
   },
