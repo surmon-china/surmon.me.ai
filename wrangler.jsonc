@@ -11,5 +11,11 @@
       "binding": "RAG_BUCKET",
       "bucket_name": "surmon-me-ai-rag"
     }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": false,
+      "invocation_logs": true
+    }
+  }
 }
