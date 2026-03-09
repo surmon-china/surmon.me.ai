@@ -12,21 +12,21 @@
 
 ```mermaid
 flowchart LR
-    NodePress(["NodePress"]) --> |"Webhook"| API
+    NodePress(["NodePress"]) --> |"Webhook"| API("API")
     User(["User Client"]) --> |"Chat"| API
     Admin(["Admin Client"]) --> |"Sessions"| API
 
     subgraph AIService ["AI Service (Workers)"]
         API <--> D1[("D1")]
-        API --> Agent
+        API --> Agent("Agent")
         API --> R2[("R2")]
     end
 
     Agent --> |"Tool: RAG Query"| AISearch[("AI Search (Vectorize)")]
-    Agent --> |"Call Model"| Gateway["AI Gateway"]
+    Agent --> |"Call Model"| Gateway("AI Gateway")
     R2 -.-> |"Embedding"| AISearch
     AISearch --> |"Tool Result"| Agent
-    Gateway --> LLM
+    Gateway --> LLM("LLM")
 ```
 
 ## 技术栈
@@ -82,7 +82,7 @@ CREATE TABLE chat_messages (
 
 该数据模型服务于：管理员拉取对话记录、用户拉取对话历史、存储模型对话上下文。
 
-设计理念是：与平台解耦、上下文完整、简洁易聚合。参考 ChatGPT 的消息结构，抽象出四种对话角色：
+设计理念是：与平台解耦、上下文完整、简洁易聚合。本项目参考 OpenAI 的消息结构，抽象出四种对话角色：
 
 - `user`：代表人类发出的提问。
 - `assistant`：代表 AI 的回复。
@@ -112,12 +112,12 @@ AI Search 支持两种数据源：
 
 ```mermaid
 flowchart LR
-    NodePress --> |"POST /webhook + HMAC-SHA256"| AIService("AI Service")
+    NodePress(["NodePress"]) --> |"POST /webhook <br> HMAC-SHA256"| AIService("AI Service")
     subgraph AI ["AI Service"]
         AIService --> |"Signature invalid → Reject"| STOP(("✕"))
-        AIService --> |"Signature valid → Resolve"| R2("R2 Bucket")
-        R2 --> |"put markdown → R2 Changed"| RAG("RAG Indexing")
+        AIService --> |"Signature valid → Resolve <br> Put markdown → R2"| R2("R2 Bucket")
     end
+     R2 -.-> |"R2 Changed"| RAG("RAG Indexing")
 ```
 
 ### 2. 用户对话（POST /chat）
@@ -130,11 +130,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Client(["Client First Visit"]) ----> |"GET /chat/token"| AIService("AI Service")
-    AIService ----> |"signToken(randomUUID, secret)"| Client
+    Client(["Client"]) ----> |"First Visit <br> GET /chat/token"| AIService("AI Service")
+    AIService ----> |"signToken(UUID, secret)"| Client
 
     subgraph C ["Client"]
-        Client --> |"Token"| localStorage(["LocalStorage"])
+        Client --> |"Token"| localStorage[["LocalStorage"]]
     end
 ```
 
