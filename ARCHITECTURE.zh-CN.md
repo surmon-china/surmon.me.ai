@@ -194,7 +194,7 @@ flowchart TD
     Agent --> |"Stream Event"| Client
     DONE --> |"Stream Event"| Client
 
-    DONE --> SAVE["waitUntil(saveMessages) batch write → D1"]
+    DONE --> SAVE["waitUntil(saveMessages(...)) <br> batch write → D1"]
 ```
 
 ### 3. Agent 工具列表
