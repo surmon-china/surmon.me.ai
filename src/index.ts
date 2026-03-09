@@ -25,14 +25,14 @@ app.get('/', (ctx) => {
   })
 })
 
-// For nodepress webhook
+// For NodePress webhook
 app.post('/webhook', async (ctx) => {
   const webhookInput = await verifyWebhookInput(ctx)
   ctx.executionCtx.waitUntil(resolveWebhook(webhookInput, ctx.env))
   return ctx.json(ok('Webhook processed successfully'))
 })
 
-// For admin query chat records
+// For admin query sessions
 app.route('/admin', chatAdminRouter)
 
 // For user chat agent
