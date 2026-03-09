@@ -27,6 +27,10 @@ For a full breakdown of the architecture, data flows, and deployment steps, see 
 ## Development
 
 ```bash
+pnpm install
+```
+
+```bash
 pnpm run dev
 ```
 
