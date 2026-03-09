@@ -156,22 +156,22 @@ flowchart LR
      - 调用工具结束：`emit { type: 'tool_end' }`
    - 携带工具结果再次：`callModel`（最多 2 轮）
    - 派发完成事件：`emit { type: 'done' }`
-   - 将消息批量写入 D1 数据库：`waitUntil(saveMessages)`
+   - 将消息批量写入 D1 数据库：`waitUntil(saveMessages(...))`
 
 ```mermaid
 flowchart TD
-    Client(["Client Send Message"]) --> P["POST /chat + X-Token + user message"]
+    Client(["Client"]) --> |"POST /chat <br> token + message"| Auth
 
     subgraph Auth ["Auth & Rate Limit"]
-        P --> V["verifyToken → sessionId"]
-        V --> RL["D1 Rate Limit Check 3h messages + tokens"]
-        RL --> |"Exceeded"| ERR(["429 Reject"])
+        V["verifyToken → sessionId"]
+        V --> RATE["D1 Rate Limit Check <br> 3h messages + tokens"]
+        RATE --> |"Exceeded"| ERR(["429 Reject"])
     end
 
     subgraph Context ["Build Context"]
-        RL --> |"OK"| SM["R2: read site-metainfo.md → System Prompt"]
+        RATE --> |"OK"| SM["R2: read site-metainfo.md → System Prompt"]
         SM --> HIS["D1: fetch last 2 rounds user/assistant history"]
-        HIS --> MSG["Assemble inputMessages [system, ...history, userMessage]"]
+        HIS --> MSG["Assemble inputMessages <br> [system, ...history, userMessage]"]
     end
 
     subgraph Stream ["SSE Stream"]
@@ -179,7 +179,7 @@ flowchart TD
         SSE --> AG["runAgent(inputMessages)"]
 
         subgraph Agent ["Agent Loop (max 2 rounds)"]
-            AG --> CM["callModel → AI Gateway → Gemini 2.5 Flash"]
+            AG --> CM["callModel → AI Gateway → LLM"]
             CM --> PS["parseModelStream"]
             PS --> |"text delta"| ET["emit type: text"]
             PS --> |"tool call delta"| TS["emit type: tool_start"]
@@ -199,7 +199,7 @@ flowchart TD
 
 ### 3. Agent 工具列表
 
-本项目采用了类似 [AI SDK](https://ai-sdk.dev/docs/foundations/tools) 的设计，直接由 Zod 定义 Tool 模型，并最终转换为 LLM 可以理解的 JSON Schema 格式。
+本项目采用了类似 AI SDK [Tools](https://ai-sdk.dev/docs/foundations/tools) 的设计，直接由 Zod 定义 Tool 模型，并最终转换为 LLM 可以理解的 JSON Schema 格式。
 
 | 工具名                  | 触发场景                             | 数据来源                    |
 | ----------------------- | ------------------------------------ | --------------------------- |
