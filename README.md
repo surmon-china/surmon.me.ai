@@ -8,28 +8,51 @@
 &nbsp;
 [![GitHub license](https://img.shields.io/github/license/surmon-china/surmon.me.ai.svg?style=for-the-badge)](/LICENSE)
 
-The AI-native brain of [surmon.me](https://surmon.me/): An edge-computing AI service built with Cloudflare Workers, Vectorize, and Gemini.
+The AI Agent service for the [surmon.me](https://surmon.me/) ecosystem, built on Cloudflare Workers. It connects CMS content (NodePress), the frontend website, and external knowledge sources into a unified conversational interface powered by Gemini 2.5 Flash and RAG.
+
+For a full breakdown of the architecture, data flows, and deployment steps, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
-```txt
-npm install
-npm run dev
+**surmon.me.ai** 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务。基于 Tool-driven 的 Agent 架构，将 CMS 内容（NodePress）、前端网站（Surmon.me）与外部知识源统一接入智能对话能力。
+
+有关设计、架构、部署的问题，请参阅 [中文架构文档](./ARCHITECTURE.zh-CN.md)。
+
+---
+
+**Related projects:**
+
+- **[NodePress](https://github.com/surmon-china/nodepress)** - RESTful API service (CMS core).
+- **[surmon.me](https://github.com/surmon-china/surmon.me)** - SSR blog website
+- **[surmon.me.admin](https://github.com/surmon-china/surmon.me.admin)** - Blog admin site
+
+## Development
+
+```bash
+pnpm run dev
 ```
 
-```txt
-npm run deploy
+If connecting to remote resources (D1/R2) with network restrictions:
+
+```bash
+HTTPS_PROXY=http://127.0.0.1:6152 pnpm run dev
 ```
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+## Deployment
 
-```txt
-npm run cf-typegen
+Configure secrets before deploying:
+
+```bash
+wrangler secret put CF_ACCOUNT_ID
+wrangler secret put CF_AIG_TOKEN
+wrangler secret put CHAT_TOKEN_SECRET
+wrangler secret put WEBHOOK_SECRET
 ```
 
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>();
+```bash
+pnpm run deploy
 ```
+
+## License
+
+[MIT](/LICENSE)

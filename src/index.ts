@@ -1,17 +1,19 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import type { Bindings } from './env'
-import { handleWebhook } from './webhook'
-import { resolveWebhookInput } from './webhook/resolve-input'
+import { verifyWebhookInput } from './webhook/verify'
+import { resolveWebhook } from './webhook'
+import { chatAdminRouter } from './chat-admin'
+import { chatAgentRouter } from './chat-user'
+import { fail, ok } from './utils/response'
 import packageJson from '../package.json'
 
-const app = new Hono<{ Bindings: Bindings }>()
+const app = new Hono<{ Bindings: Env }>()
 
 app.onError((error, ctx) => {
-  console.error(`[Global Error]: ${error.message}`, error)
+  console.error('[Global Error]:', error)
   return error instanceof HTTPException
-    ? error.getResponse()
-    : ctx.json({ success: false, message: error.message }, 500)
+    ? ctx.json(fail(error.message, error.cause), error.status)
+    : ctx.json(fail(error.message, error.cause), 500)
 })
 
 app.get('/', (ctx) => {
@@ -23,10 +25,17 @@ app.get('/', (ctx) => {
   })
 })
 
+// For nodepress webhook
 app.post('/webhook', async (ctx) => {
-  const webhookInput = await resolveWebhookInput(ctx)
-  ctx.executionCtx.waitUntil(handleWebhook(webhookInput, ctx.env))
-  return ctx.json({ success: true, message: 'Webhook processed successfully' })
+  const webhookInput = await verifyWebhookInput(ctx)
+  ctx.executionCtx.waitUntil(resolveWebhook(webhookInput, ctx.env))
+  return ctx.json(ok('Webhook processed successfully'))
 })
+
+// For admin query chat records
+app.route('/admin', chatAdminRouter)
+
+// For user chat agent
+app.route('/chat', chatAgentRouter)
 
 export default app

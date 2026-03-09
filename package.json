@@ -1,6 +1,6 @@
 {
   "name": "surmon.me.ai",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "AI service for Surmon.me blog",
   "author": "Surmon",
   "license": "MIT",
@@ -17,7 +17,9 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
-    "hono": "^4.x"
+    "@hono/zod-validator": "^0.7.6",
+    "hono": "^4.x",
+    "zod": "^4.x"
   },
   "devDependencies": {
     "wrangler": "^4.69.0"

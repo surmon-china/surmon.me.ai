@@ -1,0 +1,81 @@
+import { z } from 'zod'
+import { defineTool } from './agent/tool'
+import * as CONFIG from '../config'
+
+export const getAgentTools = (env: Env) => ({
+  getBlogList: defineTool({
+    description: 'Fetch the latest article list from the blog.',
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch('https://api.surmon.me/articles?per_page=8')
+      if (!response.ok) throw new Error(`Failed to fetch article list: ${response.status}`)
+      const { result } = (await response.json()) as { result: { data: any[] } }
+      return result.data.map((article) => ({
+        id: article.id,
+        title: article.title,
+        summary: article.summary,
+        url: `https://surmon.me/article/${article.id}`
+      }))
+    }
+  }),
+
+  getArticleDetail: defineTool({
+    description:
+      'Fetch the full Markdown content of an article by its ID. You must call getBlogList first to obtain a valid ID.',
+    inputSchema: z.object({
+      articleId: z.number().describe('The unique integer ID of the article.')
+    }),
+    execute: async ({ articleId }) => {
+      const response = await fetch(`https://api.surmon.me/articles/${articleId}`)
+      if (!response.ok) throw new Error(`Failed to fetch article ${articleId}: ${response.status}`)
+      const { result } = (await response.json()) as any
+      return { title: result.title, content: result.content }
+    }
+  }),
+
+  getOpenSourceProjects: defineTool({
+    description: "Fetch the author's open-source project list from GitHub.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch(
+        `https://raw.githubusercontent.com/surmon-china/surmon-china/release/github.json`
+      )
+      if (!response.ok) throw new Error(`Failed to fetch open-source projects: ${response.status}`)
+      const { repositories } = (await response.json()) as any
+      return repositories
+        .filter((repository: any) => !repository.fork)
+        .map((repository: any) => ({
+          name: repository.name,
+          description: repository.description,
+          language: repository.language,
+          stargazers_count: repository.stargazers_count,
+          url: repository.html_url
+        }))
+    }
+  }),
+
+  askKnowledgeBase: defineTool({
+    description:
+      "Search the private knowledge base about the blog author's personal experiences, hobbies, opinions, thoughts, and writing.",
+    inputSchema: z.object({
+      query: z.string().describe('The specific question to retrieve from the knowledge base.')
+    }),
+    execute: async ({ query }) => {
+      const results = await env.AI.aiSearch()
+        .get(env.AI_SEARCH_INSTANCE_NAME)
+        .search({
+          messages: [{ role: 'user', content: query }],
+          ai_search_options: {
+            retrieval: { max_num_results: CONFIG.CHAT_AGENT_RAG_SEARCH_MAX_RESULTS },
+            query_rewrite: { enabled: true },
+            reranking: { enabled: true, model: '@cf/baai/bge-reranker-base' }
+          }
+        })
+
+      return (
+        (results.chunks || []).map((chunk) => `[${chunk.item.key}]\n${chunk.text}`).join('\n\n') ||
+        'No relevant content found.'
+      )
+    }
+  })
+})

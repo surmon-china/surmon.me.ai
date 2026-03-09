@@ -1,0 +1,30 @@
+export const SITE_METAINFO_MARKDOWN_FILE_NAME = 'site-metainfo.md'
+
+export const ADMIN_API_CORS_ORIGINS = ['https://admin.surmon.me', 'http://localhost:5173']
+export const ADMIN_API_VERIFY_TOKEN_ENDPOINT = 'https://api.surmon.me/admin/verify-token'
+
+export const CHAT_API_CORS_ORIGINS = ['https://surmon.me', 'http://localhost:3000']
+export const CHAT_API_TOKEN_HEADER_NAME = 'X-Token'
+export const CHAT_API_USER_HISTORY_LIST_LIMIT = 50
+
+export const CHAT_AGENT_PROMPT_SITE_NAME = 'Surmon.me'
+export const CHAT_AGENT_PROMPT_SITE_MASTER_NAME = 'Surmon'
+
+export const CHAT_AGENT_RATE_LIMIT_WINDOW_HOURS = 6
+export const CHAT_AGENT_RATE_LIMIT_MAX_MESSAGES = 30
+export const CHAT_AGENT_RATE_LIMIT_MAX_TOKENS = 50000
+
+// Maximum allowed length (in characters) for a single user message.
+export const CHAT_AGENT_USER_MESSAGE_MAX_LENGTH = 300
+
+// Maximum number of agentic tool-call iterations per request.
+// Prevents infinite loops in multi-step tool chains.
+export const CHAT_AGENT_TOOL_CALL_MAX_STEPS = 2
+
+// Maximum number of conversation rounds passed to the model as context history.
+// Tool-related messages are excluded; each round counts as one user + one assistant message.
+export const CHAT_AGENT_USER_HISTORY_MESSAGES_MAX_ROUNDS = 2
+
+// Maximum number of chunks returned per RAG retrieval.
+// Fewer results reduce token usage but may lower answer quality — tune carefully.
+export const CHAT_AGENT_RAG_SEARCH_MAX_RESULTS = 3

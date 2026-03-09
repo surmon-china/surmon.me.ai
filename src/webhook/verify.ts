@@ -1,13 +1,12 @@
 import { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import type { Bindings } from '../env'
 import type { WebhookInput } from './index'
 
 // https://github.com/surmon-china/nodepress/blob/main/src/modules/webhook/webhook.service.ts
-export const resolveWebhookInput = async (c: Context<{ Bindings: Bindings }>): Promise<WebhookInput> => {
-  const signature = c.req.header('X-Webhook-Signature')
-  const timestamp = c.req.header('X-Webhook-Timestamp')
-  const secret = c.env.WEBHOOK_SECRET
+export const verifyWebhookInput = async (ctx: Context<{ Bindings: Env }>): Promise<WebhookInput> => {
+  const signature = ctx.req.header('X-Webhook-Signature')
+  const timestamp = ctx.req.header('X-Webhook-Timestamp')
+  const secret = ctx.env.WEBHOOK_SECRET
 
   // 1. Basic verification
   if (!signature || !timestamp || !secret) {
@@ -19,7 +18,7 @@ export const resolveWebhookInput = async (c: Context<{ Bindings: Bindings }>): P
     throw new HTTPException(401, { message: 'Webhook request expired' })
   }
 
-  const rawBody = await c.req.text()
+  const rawBody = await ctx.req.text()
   if (!rawBody) {
     throw new HTTPException(400, { message: 'Empty request body' })
   }

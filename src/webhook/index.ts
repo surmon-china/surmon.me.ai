@@ -1,7 +1,6 @@
 import { HTTPException } from 'hono/http-exception'
 import { upsertArticlesToBucket, deleteArticlesFromBucket } from './resolve-article'
 import { upsertOptionsToBucket } from './resolve-options'
-import type { Bindings } from '../env'
 
 // https://github.com/surmon-china/nodepress/blob/main/src/modules/webhook/webhook.constant.ts
 export enum WebhookEvent {
@@ -16,7 +15,7 @@ export interface WebhookInput {
   timestamp: number
 }
 
-export const handleWebhook = async (input: WebhookInput, env: Bindings) => {
+export const resolveWebhook = async (input: WebhookInput, env: Env) => {
   const { event, payload } = input
 
   try {

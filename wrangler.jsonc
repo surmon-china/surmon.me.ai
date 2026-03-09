@@ -4,14 +4,28 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-03-01",
   "ai": {
-    "binding": "AI"
+    "binding": "AI",
+    "remote": true
   },
   "r2_buckets": [
     {
       "binding": "RAG_BUCKET",
-      "bucket_name": "surmon-me-ai-rag"
+      "bucket_name": "surmon-me-ai-rag",
+      "remote": true
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "AGENT_DB",
+      "database_id": "98c1c2a5-2d78-4f73-a9c4-4c5f716e946e",
+      "database_name": "surmon-me-ai-agent",
+      "remote": true
+    }
+  ],
+  "vars": {
+    "AI_GATEWAY_NAME": "surmon-me-ai",
+    "AI_SEARCH_INSTANCE_NAME": "surmon-me-rag"
+  },
   "observability": {
     "logs": {
       "enabled": true,
