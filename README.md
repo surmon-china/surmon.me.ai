@@ -8,17 +8,13 @@
 &nbsp;
 [![GitHub license](https://img.shields.io/github/license/surmon-china/surmon.me.ai.svg?style=for-the-badge)](/LICENSE)
 
-The AI Agent service for the [surmon.me](https://surmon.me/) ecosystem, built on Cloudflare Workers. It connects CMS content (NodePress), the frontend website, and external knowledge sources into a unified conversational interface powered by Gemini 2.5 Flash and RAG.
+**The AI Agent service for the [surmon.me](https://surmon.me/) ecosystem, built on Cloudflare Workers. It connects CMS content (NodePress), the frontend website, and external knowledge sources into a unified conversational interface powered by Gemini 2.5 Flash and RAG.**
 
 For a full breakdown of the architecture, data flows, and deployment steps, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
----
-
-**surmon.me.ai** 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务。基于 Tool-driven 的 Agent 架构，将 CMS 内容（NodePress）、前端网站（Surmon.me）与外部知识源统一接入智能对话能力。
+**surmon.me.ai 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务。基于 Tool-driven 的 Agent 架构，将 CMS 内容（NodePress）、前端网站（Surmon.me）与外部知识源统一接入智能对话能力。**
 
 有关设计、架构、部署的问题，请参阅 [中文架构文档](./ARCHITECTURE.zh-CN.md)。
-
----
 
 **Related projects:**
 
