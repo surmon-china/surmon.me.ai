@@ -8,7 +8,7 @@
 &nbsp;
 [![GitHub license](https://img.shields.io/github/license/surmon-china/surmon.me.ai.svg?style=for-the-badge)](/LICENSE)
 
-**The AI Agent service for the [surmon.me](https://surmon.me/) ecosystem, built on Cloudflare Workers. It connects CMS content (NodePress), the frontend website, and external knowledge sources into a unified conversational interface powered by Gemini 2.5 Flash and RAG.**
+**The AI Agent service for the [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) ecosystem, built on Cloudflare Workers. It connects CMS content (NodePress), the frontend website, and external knowledge sources into a unified conversational interface powered by Gemini 2.5 Flash and RAG.**
 
 For a full breakdown of the architecture, data flows, and deployment steps, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
