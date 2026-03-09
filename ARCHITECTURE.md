@@ -10,21 +10,21 @@ This document helps developers understand the design philosophy, technology stac
 
 ```mermaid
 flowchart LR
-    NodePress(["NodePress"]) --> |"Webhook"| API
+    NodePress(["NodePress"]) --> |"Webhook"| API("API")
     User(["User Client"]) --> |"Chat"| API
     Admin(["Admin Client"]) --> |"Sessions"| API
 
     subgraph AIService ["AI Service (Workers)"]
         API <--> D1[("D1")]
-        API --> Agent
+        API --> Agent("Agent")
         API --> R2[("R2")]
     end
 
     Agent --> |"Tool: RAG Query"| AISearch[("AI Search (Vectorize)")]
-    Agent --> |"Call Model"| Gateway["AI Gateway"]
+    Agent --> |"Call Model"| Gateway("AI Gateway")
     R2 -.-> |"Embedding"| AISearch
     AISearch --> |"Tool Result"| Agent
-    Gateway --> LLM
+    Gateway --> LLM("LLM")
 ```
 
 ## Tech Stack
@@ -80,7 +80,7 @@ CREATE TABLE chat_messages (
 
 This data model serves three purposes: admin retrieval of conversation records, user retrieval of conversation history, and storage of model conversation context.
 
-The design philosophy is: platform-decoupled, context-complete, and easy to aggregate. Modeled after ChatGPT's message structure, it abstracts four conversation roles:
+The design philosophy is: platform-decoupled, context-complete, and easy to aggregate. Modeled after OpenAI's message structure, it abstracts four conversation roles:
 
 - `user`: Represents a question sent by a human.
 - `assistant`: Represents a response from the AI.
@@ -110,12 +110,12 @@ After testing across multiple dimensions, this project uses the **R2 approach**.
 
 ```mermaid
 flowchart LR
-    NodePress --> |"POST /webhook + HMAC-SHA256"| AIService("AI Service")
+    NodePress(["NodePress"]) --> |"POST /webhook <br> HMAC-SHA256"| AIService("AI Service")
     subgraph AI ["AI Service"]
         AIService --> |"Signature invalid → Reject"| STOP(("✕"))
-        AIService --> |"Signature valid → Resolve"| R2("R2 Bucket")
-        R2 --> |"put markdown → R2 Changed"| RAG("RAG Indexing")
+        AIService --> |"Signature valid → Resolve <br> Put markdown → R2"| R2("R2 Bucket")
     end
+     R2 -.-> |"R2 Changed"| RAG("RAG Indexing")
 ```
 
 ### 2. User Chat (POST /chat)
@@ -128,11 +128,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Client(["Client First Visit"]) ----> |"GET /chat/token"| AIService("AI Service")
-    AIService ----> |"signToken(randomUUID, secret)"| Client
+    Client(["Client"]) ----> |"First Visit <br> GET /chat/token"| AIService("AI Service")
+    AIService ----> |"signToken(UUID, secret)"| Client
 
     subgraph C ["Client"]
-        Client --> |"Token"| localStorage(["LocalStorage"])
+        Client --> |"Token"| localStorage[["LocalStorage"]]
     end
 ```
 
@@ -158,18 +158,18 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Client(["Client Send Message"]) --> P["POST /chat + X-Token + user message"]
+    Client(["Client"]) --> |"POST /chat <br> token + message"| Auth
 
     subgraph Auth ["Auth & Rate Limit"]
-        P --> V["verifyToken → sessionId"]
-        V --> RL["D1 Rate Limit Check 3h messages + tokens"]
-        RL --> |"Exceeded"| ERR(["429 Reject"])
+        V["verifyToken → sessionId"]
+        V --> RATE["D1 Rate Limit Check <br> 3h messages + tokens"]
+        RATE --> |"Exceeded"| ERR(["429 Reject"])
     end
 
     subgraph Context ["Build Context"]
-        RL --> |"OK"| SM["R2: read site-metainfo.md → System Prompt"]
+        RATE --> |"OK"| SM["R2: read site-metainfo.md → System Prompt"]
         SM --> HIS["D1: fetch last 2 rounds user/assistant history"]
-        HIS --> MSG["Assemble inputMessages [system, ...history, userMessage]"]
+        HIS --> MSG["Assemble inputMessages <br> [system, ...history, userMessage]"]
     end
 
     subgraph Stream ["SSE Stream"]
@@ -177,7 +177,7 @@ flowchart TD
         SSE --> AG["runAgent(inputMessages)"]
 
         subgraph Agent ["Agent Loop (max 2 rounds)"]
-            AG --> CM["callModel → AI Gateway → Gemini 2.5 Flash"]
+            AG --> CM["callModel → AI Gateway → LLM"]
             CM --> PS["parseModelStream"]
             PS --> |"text delta"| ET["emit type: text"]
             PS --> |"tool call delta"| TS["emit type: tool_start"]
@@ -197,7 +197,7 @@ flowchart TD
 
 ### 3. Agent Tools
 
-This project follows a design similar to the [AI SDK](https://ai-sdk.dev/docs/foundations/tools), defining Tool models directly with Zod and converting them to JSON Schema format that the LLM can understand.
+This project follows a design similar to the AI SDK [Tools](https://ai-sdk.dev/docs/foundations/tools), defining Tool models directly with Zod and converting them to JSON Schema format that the LLM can understand.
 
 | Tool                    | Trigger                                                              | Data Source                |
 | ----------------------- | -------------------------------------------------------------------- | -------------------------- |
