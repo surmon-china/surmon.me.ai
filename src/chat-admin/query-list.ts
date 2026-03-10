@@ -3,6 +3,7 @@ import { z } from 'zod'
 export interface ChatSession {
   session_id: string
   last_active: number
+  last_user_message: string | null
   message_count: number
   input_tokens: number
   output_tokens: number
@@ -36,6 +37,7 @@ export const getChatSessions = async (env: Env, params: SessionQueryParams) => {
     SELECT
       s.session_id,
       m.created_at AS last_active,
+      um.content AS last_user_message,
       s.message_count,
       s.input_tokens,
       s.output_tokens,
@@ -47,6 +49,7 @@ export const getChatSessions = async (env: Env, params: SessionQueryParams) => {
       SELECT
         session_id,
         MAX(id) AS last_message_id,
+        MAX(CASE WHEN role = 'user' THEN id END) AS last_user_message_id,
         COUNT(*) AS message_count,
         COALESCE(SUM(input_tokens), 0) AS input_tokens,
         COALESCE(SUM(output_tokens), 0) AS output_tokens,
@@ -55,6 +58,7 @@ export const getChatSessions = async (env: Env, params: SessionQueryParams) => {
       GROUP BY session_id
     ) s
     JOIN chat_messages m ON m.id = s.last_message_id
+    LEFT JOIN chat_messages um ON um.id = s.last_user_message_id
     WHERE 1=1
   `
 
