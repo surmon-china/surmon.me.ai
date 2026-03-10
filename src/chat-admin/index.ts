@@ -6,13 +6,12 @@ import { zValidator } from '../utils/validator'
 import { authMiddleware } from './auth'
 import { getChatSessions, sessionQuerySchema } from './query-list'
 import { getChatMessagesBySessionId } from './query-detail'
-import * as CONFIG from '../config'
 
 export const chatAdminRouter = new Hono<{ Bindings: Env }>()
 
 chatAdminRouter.use('/*', async (ctx, next) => {
   return cors({
-    origin: [...CONFIG.ADMIN_API_CORS_ORIGINS],
+    origin: ctx.env.ADMIN_API_CORS_ORIGIN,
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'OPTIONS'],
     maxAge: 86400
@@ -21,7 +20,7 @@ chatAdminRouter.use('/*', async (ctx, next) => {
 
 chatAdminRouter.use('/*', async (ctx, next) => {
   // https://github.com/surmon-china/nodepress/blob/main/src/modules/admin/admin.controller.ts
-  return authMiddleware({ verifyTokenEndpoint: CONFIG.ADMIN_API_VERIFY_TOKEN_ENDPOINT })(ctx, next)
+  return authMiddleware({ verifyTokenEndpoint: ctx.env.ADMIN_API_VERIFY_TOKEN_ENDPOINT })(ctx, next)
 })
 
 chatAdminRouter.get('/chat-sessions', zValidator('query', sessionQuerySchema), async (ctx) => {

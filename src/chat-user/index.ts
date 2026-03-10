@@ -18,7 +18,7 @@ export const chatAgentRouter = new Hono<{ Bindings: Env }>()
 
 chatAgentRouter.use('/*', async (ctx, next) => {
   return cors({
-    origin: [...CONFIG.CHAT_API_CORS_ORIGINS],
+    origin: ctx.env.CHAT_API_CORS_ORIGIN,
     allowHeaders: ['Content-Type', CONFIG.CHAT_API_TOKEN_HEADER_NAME],
     allowMethods: ['GET', 'POST', 'OPTIONS'],
     maxAge: 86400

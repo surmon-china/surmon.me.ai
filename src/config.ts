@@ -1,9 +1,5 @@
 export const SITE_METAINFO_MARKDOWN_FILE_NAME = 'site-metainfo.md'
 
-export const ADMIN_API_CORS_ORIGINS = ['https://admin.surmon.me', 'http://localhost:5173']
-export const ADMIN_API_VERIFY_TOKEN_ENDPOINT = 'https://api.surmon.me/admin/verify-token'
-
-export const CHAT_API_CORS_ORIGINS = ['https://surmon.me', 'http://localhost:3000']
 export const CHAT_API_TOKEN_HEADER_NAME = 'X-Token'
 export const CHAT_API_USER_HISTORY_LIST_LIMIT = 50
 
