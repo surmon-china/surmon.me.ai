@@ -3,7 +3,7 @@ import type { ChatMessage, ChatMessageRole } from '../../database/interface'
 export interface ClientMessage {
   role: ChatMessageRole
   content: string
-  created_at: string
+  created_at: number
 }
 
 export const getHistoryForClient = async (
@@ -23,6 +23,6 @@ export const getHistoryForClient = async (
   return results.reverse().map((row) => ({
     role: row.role,
     content: row.content!,
-    created_at: row.created_at ?? new Date().toISOString()
+    created_at: row.created_at ?? Math.floor(Date.now() / 1000)
   }))
 }

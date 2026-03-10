@@ -1,7 +1,7 @@
 import type { ChatMessage, PartialBy } from '../../database/interface'
 
 export type InsertChatMessage = PartialBy<
-  ChatMessage,
+  Omit<ChatMessage, 'created_at'>,
   | 'id'
   | 'author_name'
   | 'author_email'
@@ -12,7 +12,6 @@ export type InsertChatMessage = PartialBy<
   | 'tool_call_id'
   | 'input_tokens'
   | 'output_tokens'
-  | 'created_at'
 >
 
 export const saveMessages = async (env: Env, messages: InsertChatMessage[]): Promise<void> => {

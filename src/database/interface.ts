@@ -15,5 +15,5 @@ export interface ChatMessage {
   tool_call_id: string | null
   input_tokens: number
   output_tokens: number
-  created_at: string
+  created_at: number
 }

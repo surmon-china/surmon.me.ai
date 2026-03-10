@@ -13,7 +13,7 @@ CREATE TABLE chat_messages (
   tool_call_id  TEXT,
   input_tokens  INTEGER  NOT NULL DEFAULT 0,
   output_tokens INTEGER  NOT NULL DEFAULT 0,
-  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at    INTEGER  NOT NULL DEFAULT (unixepoch())
 );
 
 CREATE INDEX idx_session_id    ON chat_messages (session_id, id);

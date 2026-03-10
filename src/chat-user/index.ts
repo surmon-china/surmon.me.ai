@@ -65,7 +65,7 @@ chatAgentRouter.post(
     // Rate limiting per session within a rolling time window.
     const { results } = await ctx.env.AGENT_DB.prepare(
       `SELECT COUNT(*) as count, COALESCE(SUM(input_tokens + output_tokens), 0) as tokens
-       FROM chat_messages WHERE session_id = ? AND created_at >= datetime('now', '-${CONFIG.CHAT_AGENT_RATE_LIMIT_WINDOW_HOURS} hours')`
+       FROM chat_messages WHERE session_id = ? AND created_at >= unixepoch() - ${CONFIG.CHAT_AGENT_RATE_LIMIT_WINDOW_HOURS * 3600}`
     )
       .bind(sessionId)
       .all<{ count: number; tokens: number }>()

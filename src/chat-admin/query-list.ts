@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export interface ChatSession {
   session_id: string
-  last_active: string
+  last_active: number
   message_count: number
   input_tokens: number
   output_tokens: number
