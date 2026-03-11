@@ -46,8 +46,9 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
         const lastProduced = produced.at(-1)
         if (lastProduced?.role === 'tool') {
           await onStreamEvent({
-            type: 'text',
-            content: 'This question is a bit complex. Could you break it into smaller questions?'
+            type: 'error',
+            message:
+              'This request exceeds the maximum number of steps the agent can handle. Please simplify or split your question.'
           })
           break
         }
