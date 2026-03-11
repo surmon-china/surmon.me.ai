@@ -13,7 +13,7 @@ chatAdminRouter.use('/*', async (ctx, next) => {
   return cors({
     origin: ctx.env.ADMIN_API_CORS_ORIGIN,
     allowHeaders: ['Content-Type', 'Authorization'],
-    allowMethods: ['GET', 'OPTIONS'],
+    allowMethods: ['GET', 'DELETE', 'OPTIONS'],
     maxAge: 86400
   })(ctx, next)
 })
