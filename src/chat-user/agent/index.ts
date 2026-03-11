@@ -39,6 +39,20 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
 
   try {
     for (let step = 0; step < maxSteps; step++) {
+      // If this is the last step and we're about to call the model again after tool use,
+      // it means we've exhausted steps without a final response.
+      // Ideally, the user would never receive this message.
+      if (step === maxSteps - 1) {
+        const lastProduced = produced.at(-1)
+        if (lastProduced?.role === 'tool') {
+          await onStreamEvent({
+            type: 'text',
+            content: 'This question is a bit complex. Could you break it into smaller questions?'
+          })
+          break
+        }
+      }
+
       const response = await callModel({ env, model, messages: context, tools, signal })
 
       const toolCallsMap = new Map<number, ModelToolCall>()
