@@ -42,7 +42,7 @@
       "name": "AI_CHAT_RATE_LIMITER",
       "namespace_id": "1002",
       "simple": {
-        "limit": 10,
+        "limit": 8,
         "period": 60
       }
     }
