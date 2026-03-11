@@ -16,7 +16,7 @@ export interface ChatSession {
 export const sessionQuerySchema = z.object({
   author_name: z.string().optional(),
   author_email: z.string().optional(),
-  user_id: z.number().optional(),
+  user_id: z.coerce.number().optional(),
   page: z.coerce.number().int().min(1).optional(),
   page_size: z.coerce.number().int().min(1).max(50).optional(),
   sort_field: z.enum(['last_active', 'message_count', 'total_tokens']).optional(),
@@ -42,9 +42,9 @@ export const getChatSessions = async (env: Env, params: SessionQueryParams) => {
       s.input_tokens,
       s.output_tokens,
       s.total_tokens,
-      m.author_name,
-      m.author_email,
-      m.user_id
+      um.author_name,
+      um.author_email,
+      um.user_id
     FROM (
       SELECT
         session_id,
@@ -65,15 +65,15 @@ export const getChatSessions = async (env: Env, params: SessionQueryParams) => {
   const binds: any[] = []
 
   if (params.author_name) {
-    sql += ` AND m.author_name LIKE ?`
+    sql += ` AND um.author_name LIKE ?`
     binds.push(`%${params.author_name}%`)
   }
   if (params.author_email) {
-    sql += ` AND m.author_email LIKE ?`
+    sql += ` AND um.author_email LIKE ?`
     binds.push(`%${params.author_email}%`)
   }
   if (params.user_id) {
-    sql += ` AND m.user_id = ?`
+    sql += ` AND um.user_id = ?`
     binds.push(params.user_id)
   }
 
