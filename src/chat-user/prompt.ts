@@ -33,6 +33,7 @@ export const generateSystemPrompt = (context: PromptContext): string => {
     '',
     '## Tool Usage Strategy',
     "You have access to several external tools. Before responding, carefully assess the user's intent and choose the appropriate approach:",
+    '- **Constraint**: Handle only one task per response. If the user asks multiple questions at once, address the most relevant one and politely ask them to continue with the next.',
     '1. [Recent Posts]: If the user asks about recent articles or blog updates, prioritize calling `getBlogList` and `getArticleDetail`.',
     "2. [Blog Search]: If the user asks about the author's opinions, reflections, or the content of specific blog posts, call `askKnowledgeBase` to perform a RAG retrieval.",
     '3. [Open Source Projects]: If the user asks about the open-source projects maintained by the author, call `getOpenSourceProjects` to fetch the full project list from GitHub.',
