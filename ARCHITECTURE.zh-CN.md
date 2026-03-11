@@ -233,16 +233,42 @@ flowchart TD
 
 具体参数可以在 [`CONFIG.CHAT_API_USER_HISTORY_LIST_LIMIT`](src/config.ts) 中配置。
 
-## 安全机制
+## 身份鉴权
 
-- **[Webhook 验证](src/webhook/verify.ts)**：HMAC-SHA256 签名 + 5 分钟防重放。
-- **[用户 Token](src/chat-user/signature)**：HMAC-SHA256 签发 Token，`sessionId` 作为 payload。
-- **[管理员鉴权](src/chat-admin/auth.ts)**：使用 Hono 中间件转发 Token 至 NodePress 验证，不在本服务存储管理员凭证。
-- **会话限流**：窗口时间内最多 30 条消息 / 50000 token，可以在 [`CONFIG.CHAT_AGENT_RATE_LIMIT_XXX`](src/config.ts) 中配置。
-- **[AI Gateway 限流](https://developers.cloudflare.com/ai-gateway/features/rate-limiting/)**：滑动窗口，10 次请求/分钟。
-- **[Prompt 注入防护](src/chat-user/prompt.ts)**：System Prompt 声明安全规则，拒绝角色扮演、规则修改等指令。
+#### Webhook 验证
 
-## 提示词注入测试
+**[Webhook 验证](src/webhook/verify.ts)**：HMAC-SHA256 签名 + 5 分钟防重放。
+
+#### 管理员鉴权
+
+**[管理员鉴权](src/chat-admin/auth.ts)**：使用 Hono 中间件转发 Token 至 NodePress 验证，不在本服务存储管理员凭证。
+
+#### 用户 Token 鉴权
+
+**[用户 Token](src/chat-user/signature)**：HMAC-SHA256 签发 Token，`sessionId` 作为 payload。
+
+## 限流控制
+
+#### 请求层限流
+
+使用 Rate Limiting 进行 IP 限流。
+
+#### 会话限流
+
+**会话限流**：窗口时间内最多 30 条消息 / 50000 token，可以在 [`CONFIG.CHAT_AGENT_RATE_LIMIT_XXX`](src/config.ts) 中配置。
+
+#### AI Gateway 限流
+
+**[AI Gateway 限流](https://developers.cloudflare.com/ai-gateway/features/rate-limiting/)**：滑动窗口，10 次请求/分钟。
+
+- AI Gateway 的限流能力，防护的是 Workers 到 LLM 之间的请求量，它主要用来控制 LLM 调用支出在一定范围内，避免意外的账单暴涨。
+- 在普通的个人博客场景，假设：同时在线 5 人 / 每人每小时发 20 条消息 / 每条消息 agent 平均 2 次 LLM 调用（含 tool call），则推荐设置为：峰值 = 5 × 20 × 2 = 200 requests/hour，设置每小时 150-300 之间。
+
+## Prompt 提示词注入
+
+**[Prompt 注入防护](src/chat-user/prompt.ts)**：System Prompt 声明安全规则，拒绝角色扮演、规则修改等指令。
+
+Prompt 提示词注入测试：
 
 #### 角色覆盖
 
@@ -324,7 +350,7 @@ npx wrangler d1 execute <database_name> --remote --file=./src/database/schema.sq
 
 推荐配置：
 
-- 速率限制：滑动窗口，10 次/分钟
+- 速率限制：滑动窗口，100-300 次 / 小时
 - 酌情开启 Guardrails 内容审核（开启后会增加总成本）
 
 ### 5. 配置 Secrets
