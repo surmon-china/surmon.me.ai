@@ -4,6 +4,7 @@ import { cors } from 'hono/cors'
 import { stream } from 'hono/streaming'
 import { fail, ok } from '../utils/response'
 import { zValidator } from '../utils/validator'
+import { ipRateLimit } from '../utils/rate-limit'
 
 import { getHistoryForClient } from './database/client-message'
 import { type ModelMessage, getHistoryForModel } from './database/model-message'
@@ -25,10 +26,14 @@ chatAgentRouter.use('/*', async (ctx, next) => {
   })(ctx, next)
 })
 
-chatAgentRouter.get('/token', async (ctx) => {
-  const token = await signToken(crypto.randomUUID(), ctx.env.CHAT_TOKEN_SECRET)
-  return ctx.json(ok(token))
-})
+chatAgentRouter.get(
+  '/token',
+  ipRateLimit((ctx) => ctx.env.AI_TOKEN_RATE_LIMITER),
+  async (ctx) => {
+    const token = await signToken(crypto.randomUUID(), ctx.env.CHAT_TOKEN_SECRET)
+    return ctx.json(ok(token))
+  }
+)
 
 chatAgentRouter.get(
   '/history',
@@ -65,7 +70,7 @@ chatAgentRouter.post(
     // Rate limiting per session within a rolling time window.
     const { results } = await ctx.env.AGENT_DB.prepare(
       `SELECT COUNT(*) as count, COALESCE(SUM(input_tokens + output_tokens), 0) as tokens
-       FROM chat_messages WHERE session_id = ? AND created_at >= unixepoch() - ${CONFIG.CHAT_AGENT_RATE_LIMIT_WINDOW_HOURS * 3600}`
+       FROM chat_messages WHERE session_id = ? AND created_at >= unixepoch() - ${CONFIG.CHAT_AGENT_RATE_LIMIT_ROLLING_WINDOW_HOURS * 3600}`
     )
       .bind(sessionId)
       .all<{ count: number; tokens: number }>()
