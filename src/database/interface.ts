@@ -7,7 +7,7 @@ export interface ChatMessage {
   session_id: string
   author_name: string | null
   author_email: string | null
-  user_id: string | null
+  user_id: number | null
   role: ChatMessageRole
   content: string | null
   model: string | null

@@ -68,7 +68,7 @@ CREATE TABLE chat_messages (
   session_id    TEXT     NOT NULL,        -- 由前端 Token 携带，标识一次会话
   author_name   TEXT,                     -- 可选，前端传入的用户名
   author_email  TEXT,                     -- 可选，前端传入的用户邮箱
-  user_id       TEXT,                     -- 可选，前端传入的用户 ID
+  user_id       INTEGER,                     -- 可选，前端传入的用户 ID
   role          TEXT     NOT NULL CHECK(role IN ('system','user','assistant','tool')),
   content       TEXT,                     -- 消息文本内容
   model         TEXT,                     -- 使用的模型标识

@@ -58,7 +58,7 @@ chatAgentRouter.post(
       message: z.string().min(1).max(CONFIG.CHAT_AGENT_USER_MESSAGE_MAX_LENGTH),
       author_name: z.string().max(50).optional(),
       author_email: z.email().optional().or(z.literal('')),
-      user_id: z.string().optional()
+      user_id: z.number().optional()
     })
   ),
   async (ctx) => {

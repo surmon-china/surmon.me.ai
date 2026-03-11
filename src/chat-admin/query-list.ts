@@ -10,13 +10,13 @@ export interface ChatSession {
   total_tokens: number
   author_name: string | null
   author_email: string | null
-  user_id: string | null
+  user_id: number | null
 }
 
 export const sessionQuerySchema = z.object({
   author_name: z.string().optional(),
   author_email: z.string().optional(),
-  user_id: z.string().optional(),
+  user_id: z.number().optional(),
   page: z.coerce.number().int().min(1).optional(),
   page_size: z.coerce.number().int().min(1).max(50).optional(),
   sort_field: z.enum(['last_active', 'message_count', 'total_tokens']).optional(),

@@ -5,7 +5,7 @@ CREATE TABLE chat_messages (
   session_id    TEXT     NOT NULL,
   author_name   TEXT,
   author_email  TEXT,
-  user_id       TEXT,
+  user_id       INTEGER,
   role          TEXT     NOT NULL CHECK(role IN ('system','user','assistant','tool')),
   content       TEXT,
   model         TEXT,
