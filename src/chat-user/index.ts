@@ -50,6 +50,7 @@ chatAgentRouter.get(
 
 chatAgentRouter.post(
   '/',
+  ipRateLimit((ctx) => ctx.env.AI_CHAT_RATE_LIMITER),
   zValidator('header', z.object({ [CONFIG.CHAT_API_TOKEN_HEADER_NAME]: z.string() })),
   zValidator(
     'json',
