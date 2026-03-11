@@ -23,8 +23,8 @@
     }
   ],
   "vars": {
-    "AI_GATEWAY_NAME": "surmon-me-ai",
-    "AI_SEARCH_INSTANCE_NAME": "surmon-me-rag",
+    "CF_AI_GATEWAY_ID": "surmon-me-ai",
+    "CF_AI_SEARCH_INSTANCE_NAME": "surmon-me-rag",
     "CHAT_API_CORS_ORIGIN": "https://surmon.me",
     "ADMIN_API_CORS_ORIGIN": "https://admin.surmon.me",
     "ADMIN_API_VERIFY_TOKEN_ENDPOINT": "https://api.surmon.me/admin/verify-token",

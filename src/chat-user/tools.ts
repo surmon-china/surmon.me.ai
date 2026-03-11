@@ -65,7 +65,7 @@ export const getAgentTools = (env: Env) => ({
     }),
     execute: async ({ query }) => {
       const results = await env.AI.aiSearch()
-        .get(env.AI_SEARCH_INSTANCE_NAME)
+        .get(env.CF_AI_SEARCH_INSTANCE_NAME)
         .search({
           messages: [{ role: 'user', content: query }],
           ai_search_options: {

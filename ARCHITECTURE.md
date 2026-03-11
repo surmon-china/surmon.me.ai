@@ -311,7 +311,7 @@ npx wrangler d1 execute <database_name> --remote --file=./src/database/schema.sq
 
 Create an AI Search instance in the Cloudflare dashboard and connect it to the R2 Bucket created above.
 
-Bind the AI Search instance name to the `AI_SEARCH_INSTANCE_NAME` field in `wrangler.json`.
+Bind the AI Search instance name to the `CF_AI_SEARCH_INSTANCE_NAME` field in `wrangler.json`.
 
 Recommended configuration:
 
@@ -322,7 +322,7 @@ Recommended configuration:
 
 ### 4. Configure AI Gateway
 
-Create an AI Gateway in the Cloudflare dashboard with a name matching the `AI_GATEWAY_NAME` field in `wrangler.json`.
+Create an AI Gateway in the Cloudflare dashboard with a name matching the `CF_AI_GATEWAY_ID` field in `wrangler.json`.
 
 Recommended configuration:
 

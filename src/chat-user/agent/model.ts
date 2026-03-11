@@ -31,7 +31,7 @@ export const callModel = async (options: CallModelOptions): Promise<Response> =>
   // making it straightforward to switch providers without changing the calling code.
   // https://developers.cloudflare.com/ai-gateway/features/unified-billing/#use-unified-billing
   const response = await fetch(
-    `https://gateway.ai.cloudflare.com/v1/${env.CF_ACCOUNT_ID}/${env.AI_GATEWAY_NAME}/compat/chat/completions`,
+    `https://gateway.ai.cloudflare.com/v1/${env.CF_ACCOUNT_ID}/${env.CF_AI_GATEWAY_ID}/compat/chat/completions`,
     {
       method: 'POST',
       // Note: AbortSignal may not reliably cancel the in-flight request in Cloudflare Workers.

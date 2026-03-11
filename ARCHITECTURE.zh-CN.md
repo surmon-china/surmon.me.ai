@@ -335,7 +335,7 @@ npx wrangler d1 execute <database_name> --remote --file=./src/database/schema.sq
 
 在 Cloudflare 后台创建 AI Search 实例，并连接之前创建的 R2 存储桶。
 
-将创建后的 AI Search 实例名称绑定在 `wrangler.json` 中的 `AI_SEARCH_INSTANCE_NAME` 字段。
+将创建后的 AI Search 实例名称绑定在 `wrangler.json` 中的 `CF_AI_SEARCH_INSTANCE_NAME` 字段。
 
 推荐配置：
 
@@ -346,7 +346,7 @@ npx wrangler d1 execute <database_name> --remote --file=./src/database/schema.sq
 
 ### 4. 配置 AI Gateway
 
-在 Cloudflare 后台创建 AI Gateway，命名与 `wrangler.json` 中 `AI_GATEWAY_NAME` 一致。
+在 Cloudflare 后台创建 AI Gateway，命名与 `wrangler.json` 中 `CF_AI_GATEWAY_ID` 一致。
 
 推荐配置：
 
