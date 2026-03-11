@@ -122,7 +122,7 @@ chatAgentRouter.post(
 
       await runAgent({
         env: ctx.env,
-        model: 'google-ai-studio/gemini-2.5-flash',
+        model: ctx.env.CHAT_AI_MODEL,
         messages: inputMessages,
         tools: getAgentTools(ctx.env),
         maxSteps: CONFIG.CHAT_AGENT_TOOL_CALL_MAX_STEPS,
