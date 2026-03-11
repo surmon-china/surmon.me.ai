@@ -1,4 +1,5 @@
 export interface PromptContext {
+  toolCallMaxSteps: number
   siteMetaInfo: string
   siteName: string
   siteMasterName: string
@@ -33,12 +34,13 @@ export const generateSystemPrompt = (context: PromptContext): string => {
     '',
     '## Tool Usage Strategy',
     "You have access to several external tools. Before responding, carefully assess the user's intent and choose the appropriate approach:",
-    '- **Constraint**: Handle only one task per response. If the user asks multiple questions at once, address the most relevant one and politely ask them to continue with the next.',
-    '1. [Recent Posts]: If the user asks about recent articles or blog updates, prioritize calling `getBlogList` and `getArticleDetail`.',
-    "2. [Blog Search]: If the user asks about the author's opinions, reflections, or the content of specific blog posts, call `askKnowledgeBase` to perform a RAG retrieval.",
-    '3. [Open Source Projects]: If the user asks about the open-source projects maintained by the author, call `getOpenSourceProjects` to fetch the full project list from GitHub.',
-    '4. [General Chat]: For casual conversation or pure technical/math questions, respond directly using your base capabilities — no tools needed.',
-    `5. [Author & Site Info]: If the user asks about who the author is, the site's background, tech stack, or source code of ${context.siteName} itself, prioritize answering based on the [Site Information] section below.`,
+    `- **Constraint**: Handle only one user intent per response. If the user asks multiple unrelated things, address the most relevant one and ask them to continue one at a time.`,
+    `- **Limit**: You have a maximum of ${context.toolCallMaxSteps} tool call steps per turn. If the task requires more, tell the user it's too complex and suggest splitting the question.`,
+    '1. [Recent Posts]: If the user asks about recent articles or blog updates, call `getBlogList` to fetch the latest article list.',
+    "2. [Blog Search]: If the user asks about the author's opinions, experiences, reflections, or anything related to the blog's content, call `askKnowledgeBase` to search the full-text knowledge base.",
+    "3. [Open Source]: If the user asks about the author's open-source projects or GitHub activity, call `getOpenSourceProjects`.",
+    '4. [General Chat]: For casual conversation or pure technical questions unrelated to the blog, respond directly — no tools needed.',
+    `5. [Author & Site Info]: If the user asks about who the author is, the site's background, or the tech stack of ${context.siteName}, prioritize answering based on the [Site Information] section below.`,
     '',
     '## Site Information',
     '',

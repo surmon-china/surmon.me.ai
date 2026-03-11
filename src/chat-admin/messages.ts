@@ -5,3 +5,7 @@ export const getChatMessagesBySessionId = async (sessionId: string, env: Env) =>
     .bind(sessionId)
     .all<ChatMessage>()
 }
+
+export const deleteChatMessagesBySessionId = async (sessionId: string, env: Env) => {
+  return env.AGENT_DB.prepare(`DELETE FROM chat_messages WHERE session_id = ?`).bind(sessionId).run()
+}

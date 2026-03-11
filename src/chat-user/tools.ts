@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { defineTool } from './agent/tool'
+import { getArticleUrl, getArticleMarkdownFileName } from '../webhook/resolve-article'
+import type { NodePressArticle } from '../webhook/resolve-article'
 import * as CONFIG from '../config'
 
 export const getAgentTools = (env: Env) => ({
@@ -9,27 +11,26 @@ export const getAgentTools = (env: Env) => ({
     execute: async () => {
       const response = await fetch('https://api.surmon.me/articles?per_page=8')
       if (!response.ok) throw new Error(`Failed to fetch article list: ${response.status}`)
-      const { result } = (await response.json()) as { result: { data: any[] } }
+      const { result } = (await response.json()) as { result: { data: NodePressArticle[] } }
       return result.data.map((article) => ({
         id: article.id,
         title: article.title,
         summary: article.summary,
-        url: `https://surmon.me/article/${article.id}`
+        stats: article.stats,
+        url: getArticleUrl(article.id)
       }))
     }
   }),
 
   getArticleDetail: defineTool({
-    description:
-      'Fetch the full Markdown content of an article by its ID. You must call getBlogList first to obtain a valid ID.',
+    description: 'Fetch the full Markdown content of an article by its ID.',
     inputSchema: z.object({
       articleId: z.number().describe('The unique integer ID of the article.')
     }),
     execute: async ({ articleId }) => {
-      const response = await fetch(`https://api.surmon.me/articles/${articleId}`)
-      if (!response.ok) throw new Error(`Failed to fetch article ${articleId}: ${response.status}`)
-      const { result } = (await response.json()) as any
-      return { title: result.title, content: result.content }
+      const markdownFile = await env.RAG_BUCKET.get(getArticleMarkdownFileName(articleId))
+      if (!markdownFile) throw new Error(`Failed to fetch article ${articleId}.`)
+      return await markdownFile.text()
     }
   }),
 
@@ -44,6 +45,8 @@ export const getAgentTools = (env: Env) => ({
       const { repositories } = (await response.json()) as any
       return repositories
         .filter((repository: any) => !repository.fork)
+        .sort((a: any, b: any) => b.stargazers_count - a.stargazers_count)
+        .slice(0, 50)
         .map((repository: any) => ({
           name: repository.name,
           description: repository.description,

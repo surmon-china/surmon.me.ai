@@ -39,21 +39,6 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
 
   try {
     for (let step = 0; step < maxSteps; step++) {
-      // If this is the last step and we're about to call the model again after tool use,
-      // it means we've exhausted steps without a final response.
-      // Ideally, the user would never receive this message.
-      if (step === maxSteps - 1) {
-        const lastProduced = produced.at(-1)
-        if (lastProduced?.role === 'tool') {
-          await onStreamEvent({
-            type: 'error',
-            message:
-              'This request exceeds the maximum number of steps the agent can handle. Please simplify or split your question.'
-          })
-          break
-        }
-      }
-
       const response = await callModel({ env, model, messages: context, tools, signal })
 
       const toolCallsMap = new Map<number, ModelToolCall>()
@@ -154,6 +139,17 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
       produced.push(...toolResults.map((r) => r.databaseMessage))
 
       await onStreamEvent({ type: 'tool_end' })
+    }
+
+    // If the agent exhausted all steps without producing a final text response,
+    // it means tool calls consumed all available steps. Emit an error so the client
+    // can display a message, while still persisting all produced messages for debugging.
+    const hasProducedText = produced.some((message) => message.role === 'assistant' && message.content)
+    if (!hasProducedText) {
+      await onStreamEvent({
+        type: 'error',
+        message: 'This request exceeds the maximum number of steps the agent can handle.'
+      })
     }
 
     await onStreamEvent({ type: 'done' })

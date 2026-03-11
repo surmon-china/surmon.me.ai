@@ -4,8 +4,8 @@ import { cors } from 'hono/cors'
 import { ok } from '../utils/response'
 import { zValidator } from '../utils/validator'
 import { authMiddleware } from './auth'
-import { getChatSessions, sessionQuerySchema } from './query-list'
-import { getChatMessagesBySessionId } from './query-detail'
+import { getChatSessions, sessionQuerySchema } from './sessions'
+import { getChatMessagesBySessionId, deleteChatMessagesBySessionId } from './messages'
 
 export const chatAdminRouter = new Hono<{ Bindings: Env }>()
 
@@ -36,5 +36,15 @@ chatAdminRouter.get(
     const { sessionId } = ctx.req.valid('param')
     const { results: messages } = await getChatMessagesBySessionId(sessionId, ctx.env)
     return ctx.json(ok(messages))
+  }
+)
+
+chatAdminRouter.delete(
+  '/chat-sessions/:sessionId',
+  zValidator('param', z.object({ sessionId: z.string() })),
+  async (ctx) => {
+    const { sessionId } = ctx.req.valid('param')
+    await deleteChatMessagesBySessionId(sessionId, ctx.env)
+    return ctx.json(ok(null))
   }
 )

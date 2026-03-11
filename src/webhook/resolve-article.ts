@@ -22,25 +22,28 @@ export interface NodePressArticle {
   created_at: string
 }
 
-const getArticleUrl = (articleId: number): string => {
+export const getArticleSummary = (article: NodePressArticle): string => {
+  const aiSummary = article.extras.find((item) => item.key === 'ai-summary-content')
+  return aiSummary?.value || article.summary
+}
+
+export const getArticleUrl = (articleId: number): string => {
   return `https://surmon.me/article/${articleId}`
 }
 
-const getArticleMarkdownFileName = (articleId: number): string => {
+export const getArticleMarkdownFileName = (articleId: number): string => {
   return `article-${articleId}.md`
 }
 
 const transformArticleToMarkdown = (article: NodePressArticle): string => {
   const safeStr = (str?: string) => (str || '').replace(/"/g, '\\"')
-  const aiSummary = article.extras.find((item) => item.key === 'ai-summary-content')
-  const summary = aiSummary?.value || article.summary
 
   return [
     `---`,
     ``,
     `id: ${article.id}`,
     `title: "${safeStr(article.title)}"`,
-    `summary: "${summary}"`,
+    `summary: "${getArticleSummary(article)}"`,
     `categories: [${article.categories.map((i) => `"${i.slug}"`).join(', ')}]`,
     `tags: [${article.tags.map((i) => `"${i.slug}"`).join(', ')}]`,
     `date: "${article.created_at || new Date().toISOString()}"`,
