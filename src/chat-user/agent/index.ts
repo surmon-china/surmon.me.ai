@@ -6,8 +6,8 @@ import { parseModelStream } from './stream'
 
 export type StreamEvent =
   | { type: 'text'; content: string }
-  | { type: 'tool_start'; name: string }
-  | { type: 'tool_end' }
+  | { type: 'tool_start'; id: string; name: string }
+  | { type: 'tool_end'; id: string }
   | { type: 'done' }
   | { type: 'error'; message: string }
 
@@ -34,12 +34,12 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
   const maxSteps = options.maxSteps ?? 5
 
   // context is the complete context of this agent run, appended in each round.
-  let context: ModelMessage[] = [...options.messages]
-  const produced: InsertChatMessage[] = []
+  let contextMessages: ModelMessage[] = [...options.messages]
+  const producedMessages: InsertChatMessage[] = []
 
   try {
     for (let step = 0; step < maxSteps; step++) {
-      const response = await callModel({ env, model, messages: context, tools, signal })
+      const response = await callModel({ env, model, messages: contextMessages, tools, signal })
 
       const toolCallsMap = new Map<number, ModelToolCall>()
       let assistantText = ''
@@ -60,7 +60,7 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
               type: 'function',
               function: { name: name!, arguments: '' }
             })
-            await onStreamEvent({ type: 'tool_start', name: name! })
+            await onStreamEvent({ type: 'tool_start', id: id!, name: name! })
           }
           if (argumentsDelta) {
             toolCallsMap.get(index)!.function.arguments += argumentsDelta
@@ -92,13 +92,13 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
         output_tokens: outputTokens
       }
 
-      context.push(assistantModelMessage)
-      produced.push(assistantDatabaseMessage)
+      contextMessages.push(assistantModelMessage)
+      producedMessages.push(assistantDatabaseMessage)
 
       // If no tools are invoked, this round of conversation ends.
       if (!finalToolCalls.length) break
 
-      // Execute all tools concurrently (tool_call and tool_result must appear in pairs)
+      // Execute all tools concurrently, each emitting its own tool_end when complete.
       const toolResults = await Promise.all(
         finalToolCalls.map(async (toolCall) => {
           const targetTool = tools?.[toolCall.function.name]
@@ -116,6 +116,8 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
               resultText = JSON.stringify({ error: message })
             }
           }
+
+          await onStreamEvent({ type: 'tool_end', id: toolCall.id })
 
           const toolModelMessage: ModelMessage = {
             role: 'tool',
@@ -135,17 +137,13 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
         })
       )
 
-      context.push(...toolResults.map((r) => r.modelMessage))
-      produced.push(...toolResults.map((r) => r.databaseMessage))
-
-      await onStreamEvent({ type: 'tool_end' })
+      contextMessages.push(...toolResults.map((r) => r.modelMessage))
+      producedMessages.push(...toolResults.map((r) => r.databaseMessage))
     }
 
-    // If the agent exhausted all steps without producing a final text response,
-    // it means tool calls consumed all available steps. Emit an error so the client
-    // can display a message, while still persisting all produced messages for debugging.
-    const hasProducedText = produced.some((message) => message.role === 'assistant' && message.content)
-    if (!hasProducedText) {
+    // If the last produced message is a tool result, the agent exhausted all steps
+    // without generating a final response — emit an error to notify the client.
+    if (producedMessages.at(-1)?.role === 'tool') {
       await onStreamEvent({
         type: 'error',
         message: 'This request exceeds the maximum number of steps the agent can handle.'
@@ -153,7 +151,7 @@ export const runAgent = async (options: AgentOptions): Promise<void> => {
     }
 
     await onStreamEvent({ type: 'done' })
-    await onFinish?.(produced)
+    await onFinish?.(producedMessages)
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
     await onStreamEvent({ type: 'error', message })
