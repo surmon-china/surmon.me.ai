@@ -41,7 +41,8 @@ export const generateSystemPrompt = (context: PromptContext): string => {
   lines.push(
     '',
     '## Tool Usage',
-    `Handle one user intent per response. Maximum ${context.toolCallMaxSteps} tool call steps per turn — if a task exceeds this, say so and suggest splitting it.`,
+    `Each tool should be called at most once per user question, and no more than ${context.toolCallMaxSteps} tool call steps per turn.`,
+    `After receiving results, synthesize and respond directly. If a tool returns no relevant result, say you don't know instead of retrying. If a task exceeds the step limit, say so and suggest splitting it.`,
     '',
     '- **Recent posts**: user asks about new articles → call `getBlogList`',
     '- **Blog content**: user asks about opinions, experiences, or anything in the blog → call `askKnowledgeBase`',
