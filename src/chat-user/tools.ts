@@ -51,6 +51,7 @@ export const getAgentTools = (env: Env) => ({
           name: repository.name,
           description: repository.description,
           language: repository.language,
+          archived: repository.archived,
           stargazers_count: repository.stargazers_count,
           url: repository.html_url
         }))
@@ -59,7 +60,7 @@ export const getAgentTools = (env: Env) => ({
 
   askKnowledgeBase: defineTool({
     description:
-      "Search the private knowledge base about the blog author's personal experiences, hobbies, opinions, thoughts, and writing.",
+      "Search the private knowledge base about the blog author's personal experiences, hobbies, opinions, thoughts, and writing. Returns the most relevant excerpts in a single call.",
     inputSchema: z.object({
       query: z.string().describe('The specific question to retrieve from the knowledge base.')
     }),
