@@ -2,7 +2,7 @@
 
 [English](./ARCHITECTURE.md)｜[简体中文](./ARCHITECTURE.zh-CN.md)
 
-**surmon.me.ai** 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务，基于 Tool-driven 的 Agent 架构，将 CMS 内容（NodePress）、前端网站（Surmon.me）与外部知识源统一接入智能对话能力。
+**surmon.me.ai** 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务，基于 Tool-driven 的 Agent 架构，将 CMS 内容（NodePress）、前端网站（Surmon.me）与外部知识源统一串联，提供智能对话能力。
 
 该项目遵循 **高内聚、低耦合** 的设计原则，在保持自身独立迭代的同时，与生态中的其他系统维持清晰、稳定的协作边界。
 
@@ -40,21 +40,21 @@ flowchart LR
 | [Cloudflare AI Search](https://developers.cloudflare.com/ai-search/)   | 检索 | 向量数据库，提供 RAG 语义检索能力               |
 | [Cloudflare R2](https://developers.cloudflare.com/r2/)                 | 数据 | RAG 知识库原始文件存储（Markdown）              |
 | [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/) | 网关 | LLM 请求代理，提供统一计费、限流、日志          |
-| Google Gemini 2.5 Flash                                                | 计算 | 主力语言模型（通过 AI Gateway compat 接口调用） |
+| Google Gemini 2.5 Flash / DeekSeek                                     | 计算 | 主力语言模型（通过 AI Gateway compat 接口调用） |
 
 ## 目录结构
 
 ```text
 src
 ├── index.ts           # 应用入口，全局路由分发与错误处理
-├── config.ts          # 静态配置常量
+├── config.ts          # Agent 静态配置常量
 ├── utils/             # 辅助工具函数
-├── database/          # D1 数据表定义 & TypeScript 类型定义
+├── database/          # D1 数据表模型 & TypeScript 类型定义
 ├── webhook/           # 处理来自 NodePress 的 Webhook 事件，将 CMS 内容持久化到 R2
-├── chat-admin/        # 为管理员提供的对话查询业务
-└── chat-user/         # 用户聊天 Agent 的核心实现
-    ├── signature.ts   # Token 签发与验证
+├── chat-admin/        # 为管理员提供的对话查询和管理业务
+└── chat-user/         # AI Agent Chat 的核心实现
     ├── agent/         # Agent 状态机的核心实现
+    ├── signature/     # 用户 Token 签发与验证
     ├── prompt.ts      # System Prompt 生成
     ├── tools.ts       # Agent 工具定义
     └── database/      # Agent 与 D1 数据库的桥接层
@@ -80,35 +80,45 @@ CREATE TABLE chat_messages (
 );
 ```
 
-该数据模型服务于：管理员拉取对话记录、用户拉取对话历史、存储模型对话上下文。
+**该数据模型用于存储完整的用户和模型之间的对话记录。** 服务场景有：
 
-设计理念是：与平台解耦、上下文完整、简洁易聚合。本项目参考 OpenAI 的消息结构，抽象出四种对话角色：
+- 普通用户读取对话历史。
+- 管理员读取、删除对话记录。
+- 调用模型前，读取最近对话记录，作为对话上下文。
+
+数据表的设计理念是：**与平台解耦、上下文完整、简洁易聚合。** 本项目参考 OpenAI 的消息结构，抽象出四种对话角色：
 
 - `user`：代表人类发出的提问。
 - `assistant`：代表 AI 的回复。
 - `tool`：代表工具调用的返回结果。
-- `system`：**“造物主的指令”**，通常只在每次对话的第一条出现，对用户不可见。例如 “你是一个代表 surmon.me 的极客助手...” 这类指令，就是以 system 角色发给模型的。
+- `system`：**“造物主的指令”**（提示词），通常只在每次对话的第一条出现，对用户不可见。（例如 “你是一个代表 surmon.me 的极客助手...” 这类指令，就是以 system 角色发给模型的）
 
 > **为什么数据库要保留 system 字段**：system prompt 通常在代码中动态组装而不持久化。保留该角色是为了支持未来可能增加的审计、A/B 测试等高级场景。
 
 ## 核心数据流
 
+AI Agent 的核心能力是 RAG 搜索，RAG 搜索的核心工作是：数据的收集、清洗、向量化。
+
+也就是 Agent 回答主要问题的知识库。
+
 ### 1. 知识库构建（NodePress → R2）
 
 [Cloudflare AI Search](https://developers.cloudflare.com/ai-search/) 是对多项 Cloudflare 基础能力的整合封装，它可以简洁地将一个数据源接入 RAG 搜索。
 
-AI Search 内部架构为：
+AI Search 产品架构为：
 
 1. [数据源](https://developers.cloudflare.com/ai-search/configuration/data-source/)：建立原始数据源。
 2. [建立索引](https://developers.cloudflare.com/ai-search/concepts/what-is-rag/)：使用 Embedding 模型向量化 + 向量数据存入 [Vectorize](https://developers.cloudflare.com/vectorize/)。
-3. [查询数据](https://developers.cloudflare.com/ai-search/usage/workers-binding/)：由 Workers 通过 `env.AI.aiSearch()` 或 REST API 访问 RAG 服务。
+3. [查询数据](https://developers.cloudflare.com/ai-search/usage/workers-binding/)：由 Workers 通过 `env.AI.search({ ... })` 或 REST API 访问 RAG 服务。
 
 AI Search 支持两种数据源：
 
-- **爬虫（Sitemap/Crawler）**：操作简单，但抓取的是 HTML 且只包含首屏内容，对分段渲染的长文章无能为力。更重要的是，爬虫无法区分正文、侧边栏、评论、AI Review 等 UI 元素，这些噪音会污染 Embedding 的向量空间，导致严重的召回质量问题。
-- **R2 存储桶**：直接读取主动维护的 Markdown 文件数据源，内容 100% 可控，可剥离所有 UI 噪音，支持完整长文，并通过 Frontmatter 赋予模型结构化的元数据上下文。
+- **爬虫（Sitemap/Crawler）**：操作简单易上手，但抓取的是 HTML 且只包含首屏内容，对分段渲染的长文章无能为力。更重要的是，爬虫无法区分正文、侧边栏、评论、AI Review 等 UI 元素，这些元素无法被完全干净地过滤掉从而产生数据噪音，这些噪音会污染 Embedding 的向量空间，导致严重的召回质量问题。
+- **R2 存储桶**：主动维护 Markdown 文件在 R2 存储桶中作为数据源，内容 100% 可控，可剥离所有 UI 噪音，支持完整长文，并通过 Frontmatter 赋予模型结构化的元数据上下文。
 
 本项目在多维度测试后，使用 **R2 方案**，通过 [NodePress Webhook](https://github.com/surmon-china/nodepress/tree/main/src/modules/webhook) 在内容变更时主动通知 AI Service，AI 服务在验证来源后，实时将数据同步到 R2，AI Search 随后完成增量索引。
+
+核心的代码实现在 [Webhook](./src/webhook/) 文件夹。
 
 ```mermaid
 flowchart LR
@@ -124,9 +134,9 @@ flowchart LR
 
 #### 前端首次访问
 
-1. **用户侧** → `GET /chat/token`
-2. **服务侧** → `signToken(randomUUID, secret)`
-3. **用户侧** → 将 Token 存入前端 LocalStorage（永不变动）
+1. **用户侧** → `GET /chat/token` 必须先得到一个用于标识唯一身份的 token。
+2. **服务侧** → `signToken(randomUUID, secret)` 采用 secret 签名生成 token，防止伪造。
+3. **用户侧** → 将 Token 存入前端 LocalStorage（永不变动）。
 
 ```mermaid
 flowchart LR
@@ -140,21 +150,22 @@ flowchart LR
 
 #### 前端发起对话
 
-1. **用户侧** → `POST /chat`（携带 Token + 用户消息）
-2. **服务侧** → 校验 Token `verifyToken` → 解析出 `sessionId`
-3. **服务侧** → D1 限流检查（窗口时间内消息数 + Token 用量）
-4. **服务侧** → R2 读取 `site-metainfo.md` → 生成 System Prompt
-5. **服务侧** → D1 查询最近 2 轮历史消息（仅 user/assistant 纯文本）
-6. **服务侧** → 组装 `inputMessages = [systemMessage, ...historyMessages, userMessage]`
-7. **服务侧** → 设置 SSE 响应头 → `stream()` 开启流式响应
+1. **用户侧** → `POST /chat`（携带 token + 用户消息）
+2. **服务侧** → 校验 Token `verifyToken` → 解析出 session ID
+3. **服务侧** → CF 限流检查（窗口时间内 IP 请求次数）
+4. **服务侧** → D1 限流检查（窗口时间内 session ID 的消息数量 + tokens 用量）
+5. **服务侧** → 从 R2 读取必要 markdown 文件 → 组装参数生成 System Prompt
+6. **服务侧** → D1 查询最近 <指定几轮> 历史消息（仅 user/assistant 纯文本）
+7. **服务侧** → 组装 `inputMessages = [systemMessage, ...historyMessages, userMessage]`
+8. **服务侧** → 设置 SSE 响应头 → `stream()` 开启流式响应
    - 运行 Agent 状态机：`runAgent(inputMessages)`
-   - 初次调用模型：`callModel → AI Gateway compat → Gemini 2.5 Flash`
+   - 初次调用模型：`callModel → AI Gateway compat → LLM`
    - 格式化并将流推至前端：`parseModelStream` 解析 SSE 流
    - 处理文本流：`delta → emit { type: 'text', content }`
-   - 处理工具调用：`delta → emit { type: 'tool_start', name }`
-     - 并发执行所有工具
-     - 调用工具结束：`emit { type: 'tool_end' }`
-   - 携带工具结果再次：`callModel`（最多 2 轮）
+   - 处理工具调用（如果需要）：并发执行所有工具
+     - 调用工具开始：`emit { type: 'tool_start', id, name }`
+     - 调用工具结束：`emit { type: 'tool_end', id }`
+   - 携带工具结果再次：`callModel`（最多 <指定轮次>）
    - 派发完成事件：`emit { type: 'done' }`
    - 将消息批量写入 D1 数据库：`waitUntil(saveMessages(...))`
 
