@@ -66,12 +66,16 @@ export const getAgentTools = (env: Env) => ({
       const response = await fetch('https://surmon.me/_tunnel/threads_medias')
       if (!response.ok) throw new Error(`Failed to fetch threads medias: ${response.status}`)
       const { data } = await response.json<{ data: Array<any> }>()
+      // Only retain content from the most recent month, filtering out media without text (images/videos without captions).
+      const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
       return data
-        .filter((item) => item.text)
-        .map((item: any) => ({
+        .filter((item) => {
+          // Text that is too short is of no value to LLM.
+          return item.text && item.text.length >= 5 && new Date(item.timestamp).getTime() > oneMonthAgo
+        })
+        .map((item) => ({
           text: item.text,
           timestamp: item.timestamp,
-          permalink: item.permalink,
           media_type: item.media_type
         }))
     }
