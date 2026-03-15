@@ -1,6 +1,5 @@
 export interface PromptContext {
   modelName: string
-  toolCallMaxSteps: number
   siteMetaInfo: string
   siteName: string
   siteMasterName: string
@@ -41,9 +40,11 @@ export const generateSystemPrompt = (context: PromptContext): string => {
   lines.push(
     '',
     '## Tool Usage',
-    `Each tool should be called at most once per user question, and no more than ${context.toolCallMaxSteps} tool call steps per turn.`,
-    `After receiving results, synthesize and respond directly. If a tool returns no relevant result, say you don't know instead of retrying. If a task exceeds the step limit, say so and suggest splitting it.`,
+    `Each tool may be called at most once per user question.`,
+    `After receiving tool results, synthesize them and respond directly. If a tool returns no relevant result, say you don't know instead of retrying.`,
+    `If a question requires more information than tools can reasonably provide in one turn, say so and suggest the user ask more focused questions.`,
     '',
+    '### When to use tools',
     '- **Recent posts**: user asks about new articles or blog posts → call `getBlogList`',
     '- **Blog content**: user asks about opinions, experiences, or anything in the blog → call `askKnowledgeBase`',
     '- **Open source**: user asks about projects or GitHub → call `getOpenSourceProjects`',

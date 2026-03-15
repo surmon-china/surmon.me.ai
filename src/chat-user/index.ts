@@ -91,7 +91,6 @@ chatAgentRouter.post(
       content: generateSystemPrompt({
         contextUserName: userContext.author_name,
         modelName: ctx.env.CHAT_AI_MODEL,
-        toolCallMaxSteps: CONFIG.CHAT_AGENT_TOOL_CALL_MAX_STEPS,
         siteMetaInfo: (await siteMetaInfoFile?.text()) || 'Null',
         siteName: CONFIG.CHAT_AGENT_PROMPT_SITE_NAME,
         siteMasterName: CONFIG.CHAT_AGENT_PROMPT_SITE_MASTER_NAME
