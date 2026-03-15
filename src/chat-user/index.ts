@@ -85,15 +85,15 @@ chatAgentRouter.post(
     }
 
     // System-level prompts
-    const siteMetaInfoFile = await ctx.env.RAG_BUCKET.get(CONFIG.SITE_METAINFO_MARKDOWN_FILE_NAME)
+    const authorInfoMarkdown = await ctx.env.RAG_BUCKET.get(CONFIG.AUTHOR_INFO_MARKDOWN_FILE_NAME)
     const systemMessage: ModelMessage = {
       role: 'system',
       content: generateSystemPrompt({
         contextUserName: userContext.author_name,
         modelName: ctx.env.CHAT_AI_MODEL,
-        siteMetaInfo: (await siteMetaInfoFile?.text()) || 'Null',
         siteName: CONFIG.CHAT_AGENT_PROMPT_SITE_NAME,
-        siteMasterName: CONFIG.CHAT_AGENT_PROMPT_SITE_MASTER_NAME
+        authorName: CONFIG.CHAT_AGENT_PROMPT_SITE_MASTER_NAME,
+        authorBiography: (await authorInfoMarkdown?.text()) || 'Null'
       })
     }
 

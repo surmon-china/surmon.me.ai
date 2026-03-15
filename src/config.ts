@@ -1,4 +1,5 @@
-export const SITE_METAINFO_MARKDOWN_FILE_NAME = 'site-metainfo.md'
+export const AUTHOR_INFO_MARKDOWN_FILE_NAME = 'static/author_info.md'
+export const SITE_INFO_MARKDOWN_FILE_NAME = 'static/site_info.md'
 
 export const CHAT_API_TOKEN_HEADER_NAME = 'X-Token'
 export const CHAT_API_USER_HISTORY_LIST_LIMIT = 50

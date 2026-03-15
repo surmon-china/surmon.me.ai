@@ -1,4 +1,4 @@
-import { SITE_METAINFO_MARKDOWN_FILE_NAME } from '../config'
+import { AUTHOR_INFO_MARKDOWN_FILE_NAME, SITE_INFO_MARKDOWN_FILE_NAME } from '../config'
 
 // https://github.com/surmon-china/nodepress/blob/main/src/modules/options/options.model.ts
 export interface NodePressOptions {
@@ -13,13 +13,16 @@ export interface NodePressOptions {
   app_config: string
 }
 
-const transformOptionsToMarkdown = (options: NodePressOptions): string => {
-  let authorBiography = ''
+const transformOptionsToAuthorInfo = (options: NodePressOptions): string => {
   try {
     const appConfig = JSON.parse(options.app_config || '{}')
-    authorBiography = appConfig.ABOUT_BIOGRAPHY_ZH || ''
-  } catch {}
+    return appConfig.ABOUT_BIOGRAPHY_ZH || ''
+  } catch {
+    return ''
+  }
+}
 
+const transformOptionsToSiteInfo = (options: NodePressOptions): string => {
   return [
     `## Site Meta Information`,
     `Title: ${options.title}`,
@@ -27,19 +30,26 @@ const transformOptionsToMarkdown = (options: NodePressOptions): string => {
     `Description: ${options.description}`,
     `Keywords: ${(options.keywords || []).join(', ')}`,
     ``,
-    `## About the Author`,
-    authorBiography,
-    ``,
     options.statement || 'No statement provided.'
   ].join('\n')
 }
 
 export const upsertOptionsToBucket = async (options: NodePressOptions, env: Env) => {
-  const markdown = transformOptionsToMarkdown(options)
-  await env.RAG_BUCKET.put(SITE_METAINFO_MARKDOWN_FILE_NAME, markdown, {
-    httpMetadata: { contentType: 'text/markdown' },
-    customMetadata: { type: 'site_metainfo' }
-  })
+  const authorInfo = transformOptionsToAuthorInfo(options)
+  const siteInfo = transformOptionsToSiteInfo(options)
 
-  console.log(`[Webhook R2] Successfully upserted ${SITE_METAINFO_MARKDOWN_FILE_NAME}`)
+  await Promise.all([
+    env.RAG_BUCKET.put(AUTHOR_INFO_MARKDOWN_FILE_NAME, authorInfo, {
+      httpMetadata: { contentType: 'text/markdown' },
+      customMetadata: { type: 'static_info' }
+    }),
+    env.RAG_BUCKET.put(SITE_INFO_MARKDOWN_FILE_NAME, siteInfo, {
+      httpMetadata: { contentType: 'text/markdown' },
+      customMetadata: { type: 'static_info' }
+    })
+  ])
+
+  console.log(
+    `[Webhook R2] Successfully upserted ${AUTHOR_INFO_MARKDOWN_FILE_NAME}, ${SITE_INFO_MARKDOWN_FILE_NAME}`
+  )
 }

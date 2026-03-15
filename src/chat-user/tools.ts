@@ -6,7 +6,7 @@ import * as CONFIG from '../config'
 
 export const getAgentTools = (env: Env) => ({
   getBlogList: defineTool({
-    description: 'Fetch the latest article list from the blog.',
+    description: 'Fetch the latest blog articles.',
     inputSchema: z.object({}),
     execute: async () => {
       const response = await fetch('https://api.surmon.me/articles?per_page=8')
@@ -30,6 +30,16 @@ export const getAgentTools = (env: Env) => ({
     execute: async ({ articleId }) => {
       const markdownFile = await env.RAG_BUCKET.get(getArticleMarkdownFileName(articleId))
       if (!markdownFile) throw new Error(`Failed to fetch article ${articleId}.`)
+      return await markdownFile.text()
+    }
+  }),
+
+  getSiteInformation: defineTool({
+    description: 'Fetch site information such as statements and FAQ.',
+    inputSchema: z.object({}),
+    execute: async () => {
+      const markdownFile = await env.RAG_BUCKET.get(CONFIG.SITE_INFO_MARKDOWN_FILE_NAME)
+      if (!markdownFile) throw new Error(`Failed to fetch site information.`)
       return await markdownFile.text()
     }
   }),
@@ -59,8 +69,7 @@ export const getAgentTools = (env: Env) => ({
   }),
 
   getThreadsMedias: defineTool({
-    description:
-      "Get the blog author's latest social media posts (Threads), including text, pictures, videos, etc., to understand the author's recent thoughts, life status, and topics of interest.",
+    description: "Fetch the author's recent Threads posts, including text, images, and videos.",
     inputSchema: z.object({}),
     execute: async () => {
       const response = await fetch('https://surmon.me/_tunnel/threads_medias')
@@ -82,12 +91,11 @@ export const getAgentTools = (env: Env) => ({
   }),
 
   askKnowledgeBase: defineTool({
-    description:
-      "Search the private knowledge base about the blog author's personal experiences, hobbies, opinions, thoughts, and writing. Returns the most relevant excerpts in a single call.",
+    description: 'Search the blog knowledge base and return relevant excerpts.',
     inputSchema: z.object({
       query: z
         .string()
-        .describe("A specific search query describing the author's opinions, experiences, or thoughts.")
+        .describe('A concise search query that captures the core topic or intent of the user question.')
     }),
     execute: async ({ query }) => {
       const { chunks } = await env.AI.aiSearch()
