@@ -1,27 +1,9 @@
 import { z } from 'zod'
 import { defineTool } from './agent/tool'
-import { getArticleUrl, getArticleMarkdownFileName } from '../webhook/resolve-article'
-import type { NodePressArticle } from '../webhook/resolve-article'
+import { getArticleMarkdownFileName } from '../webhook/resolve-article'
 import * as CONFIG from '../config'
 
 export const getAgentTools = (env: Env) => ({
-  getBlogList: defineTool({
-    description: 'Fetch the latest blog articles.',
-    inputSchema: z.object({}),
-    execute: async () => {
-      const response = await fetch('https://api.surmon.me/articles?per_page=8')
-      if (!response.ok) throw new Error(`Failed to fetch article list: ${response.status}`)
-      const { result } = (await response.json()) as { result: { data: NodePressArticle[] } }
-      return result.data.map((article) => ({
-        id: article.id,
-        title: article.title,
-        summary: article.summary,
-        stats: article.stats,
-        url: getArticleUrl(article.id)
-      }))
-    }
-  }),
-
   getArticleDetail: defineTool({
     description: 'Fetch the full Markdown content of an article by its ID.',
     inputSchema: z.object({
