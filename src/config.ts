@@ -23,4 +23,6 @@ export const CHAT_AGENT_USER_HISTORY_MESSAGES_MAX_ROUNDS = 2
 
 // Maximum number of chunks returned per RAG retrieval.
 // Fewer results reduce token usage but may lower answer quality — tune carefully.
-export const CHAT_AGENT_RAG_SEARCH_MAX_RESULTS = 3
+export const CHAT_AGENT_RAG_SEARCH_MAX_RESULTS = 4
+// Maximum number of characters to include per RAG chunk in the context.
+export const CHAT_AGENT_RAG_CHUNK_MAX_LENGTH = 600
