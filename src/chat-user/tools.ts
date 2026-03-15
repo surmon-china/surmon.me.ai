@@ -58,6 +58,25 @@ export const getAgentTools = (env: Env) => ({
     }
   }),
 
+  getThreadsMedias: defineTool({
+    description:
+      "Get the blog author's latest social media posts (Threads), including text, pictures, videos, etc., to understand the author's recent thoughts, life status, and topics of interest.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch('https://surmon.me/_tunnel/threads_medias')
+      if (!response.ok) throw new Error(`Failed to fetch threads medias: ${response.status}`)
+      const { data } = await response.json<{ data: Array<any> }>()
+      return data
+        .filter((item) => item.text)
+        .map((item: any) => ({
+          text: item.text,
+          timestamp: item.timestamp,
+          permalink: item.permalink,
+          media_type: item.media_type
+        }))
+    }
+  }),
+
   askKnowledgeBase: defineTool({
     description:
       "Search the private knowledge base about the blog author's personal experiences, hobbies, opinions, thoughts, and writing. Returns the most relevant excerpts in a single call.",
