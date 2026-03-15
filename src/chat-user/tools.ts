@@ -85,10 +85,12 @@ export const getAgentTools = (env: Env) => ({
     description:
       "Search the private knowledge base about the blog author's personal experiences, hobbies, opinions, thoughts, and writing. Returns the most relevant excerpts in a single call.",
     inputSchema: z.object({
-      query: z.string().describe('The specific question to retrieve from the knowledge base.')
+      query: z
+        .string()
+        .describe("A specific search query describing the author's opinions, experiences, or thoughts.")
     }),
     execute: async ({ query }) => {
-      const results = await env.AI.aiSearch()
+      const { chunks } = await env.AI.aiSearch()
         .get(env.CF_AI_SEARCH_INSTANCE_NAME)
         .search({
           messages: [{ role: 'user', content: query }],
@@ -99,10 +101,14 @@ export const getAgentTools = (env: Env) => ({
           }
         })
 
-      return (
-        (results.chunks || []).map((chunk) => `[${chunk.item.key}]\n${chunk.text}`).join('\n\n') ||
-        'No relevant content found.'
-      )
+      if (!chunks.length) return 'No relevant content found.'
+      return chunks.map((chunk, index) => ({
+        rank: index + 1,
+        article_id: chunk.item.metadata!.id,
+        article_url: chunk.item.metadata!.url,
+        article_title: chunk.item.metadata!.title,
+        excerpt: chunk.text.slice(0, CONFIG.CHAT_AGENT_RAG_CHUNK_MAX_LENGTH)
+      }))
     }
   })
 })
