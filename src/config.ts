@@ -5,10 +5,10 @@ export const CHAT_API_TOKEN_HEADER_NAME = 'X-Token'
 export const CHAT_API_USER_HISTORY_LIST_LIMIT = 50
 
 export const CHAT_AGENT_PROMPT_SITE_NAME = 'Surmon.me'
-export const CHAT_AGENT_PROMPT_SITE_MASTER_NAME = 'Surmon'
+export const CHAT_AGENT_PROMPT_AUTHOR_NAME = 'Surmon'
 
 export const CHAT_AGENT_RATE_LIMIT_ROLLING_WINDOW_HOURS = 6
-export const CHAT_AGENT_RATE_LIMIT_MAX_MESSAGES = 30
+export const CHAT_AGENT_RATE_LIMIT_MAX_MESSAGES = 36
 export const CHAT_AGENT_RATE_LIMIT_MAX_TOKENS = 60000
 
 // Maximum allowed length (in characters) for a single user message.

@@ -92,7 +92,7 @@ chatAgentRouter.post(
         contextUserName: userContext.author_name,
         modelName: ctx.env.CHAT_AI_MODEL,
         siteName: CONFIG.CHAT_AGENT_PROMPT_SITE_NAME,
-        authorName: CONFIG.CHAT_AGENT_PROMPT_SITE_MASTER_NAME,
+        authorName: CONFIG.CHAT_AGENT_PROMPT_AUTHOR_NAME,
         authorBiography: (await authorInfoMarkdown?.text()) || 'Null'
       })
     }
