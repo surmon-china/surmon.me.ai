@@ -1,6 +1,6 @@
 # Surmon.me AI Service Architecture
 
-[English](./ARCHITECTURE.md)｜[简体中文](./ARCHITECTURE.zh-CN.md)
+[English](./ARCHITECTURE.md) | [简体中文](./ARCHITECTURE.zh-CN.md)
 
 > This document is intended to help developers understand the design philosophy, technology stack, and core data flows of **surmon.me.ai**.
 
