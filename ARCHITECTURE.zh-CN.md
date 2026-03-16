@@ -142,10 +142,10 @@ flowchart LR
 - `GET /chat/history` 用户依据 Token 从服务端拉取自己最近的对话历史用于前端展示。
 - `POST /chat` 服务端 Agent Loop 处理用户的对话请求，并返回 SSE 响应。
 
-#### 前端首次访问
+#### 2.1 前端首次访问
 
 1. **User** → `GET /chat/token` 必须先得到一个用于标识唯一身份的 Token。
-2. **AI Service** → `signToken(randomUUID, secret)` 采用 Secret 签名生成 Token，防止伪造。
+2. **AI Service** → `signToken(randomUUID, secret)` 使用 Secret 签名生成唯一 Token，防止伪造。
 3. **User** → 将 Token 存入前端 LocalStorage（永不变动）。
 
 ```mermaid
@@ -158,7 +158,7 @@ flowchart LR
     end
 ```
 
-#### 前端发起对话
+#### 2.2 前端发起对话
 
 1. **User** → `POST /chat`（携带 Token + 用户消息）
 2. **AI Service** → CF 限流检查（窗口时间内 IP 请求次数）
