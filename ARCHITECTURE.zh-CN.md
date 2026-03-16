@@ -47,7 +47,7 @@ flowchart LR
 ```text
 src
 ├── index.ts           # 应用入口，全局路由分发与错误处理
-├── config.ts          # Agent 静态配置常量
+├── config.ts          # 应用的运行时静态配置
 ├── utils/             # 辅助工具函数
 ├── database/          # D1 数据表模型 & TypeScript 类型定义
 ├── webhook/           # 处理来自 NodePress 的 Webhook 事件，将 CMS 内容持久化到 R2
