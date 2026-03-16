@@ -271,15 +271,15 @@ This parameter is configurable via [`CONFIG.CHAT_API_USER_HISTORY_LIST_LIMIT`](s
 
 #### Webhook Verification
 
-HMAC-SHA256 signature + 5-minute replay protection. **[Code](src/webhook/verify.ts)**
+HMAC-SHA256 signature + 5-minute replay protection. **[code](src/webhook/verify.ts)**
 
 #### Admin Authentication
 
-Hono middleware forwards the Token to NodePress for verification; no admin credentials are stored in this service. **[Code](src/chat-admin/auth.ts)**
+Hono middleware forwards the Token to NodePress for verification; no admin credentials are stored in this service. **[code](src/chat-admin/auth.ts)**
 
 #### User Token Verification
 
-HMAC-SHA256 signed Token with `sessionId` as payload. **[Code](src/chat-user/signature/index.ts)**
+HMAC-SHA256 signed Token with `sessionId` as payload. **[code](src/chat-user/signature/index.ts)**
 
 ## Rate Limiting
 
