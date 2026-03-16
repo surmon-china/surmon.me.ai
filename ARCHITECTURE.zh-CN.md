@@ -2,7 +2,7 @@
 
 [English](./ARCHITECTURE.md)｜[简体中文](./ARCHITECTURE.zh-CN.md)
 
-本文档旨在帮助开发者理解 **surmon.me.ai** 的设计哲学、技术栈实现与核心数据流。
+> 本文档旨在帮助开发者理解 **surmon.me.ai** 的设计哲学、技术栈实现与核心数据流。
 
 **surmon.me.ai** 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务，基于 Tool-driven 的 Agent 架构，将 CMS 系统（NodePress）、前端网站（Surmon.me）与外部知识源统一串联整合，提供智能对话能力。
 
