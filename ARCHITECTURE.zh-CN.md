@@ -99,7 +99,7 @@ CREATE TABLE chat_messages (
 
 在本项目中 AI Agent 的核心能力是 [RAG](https://surmon.me/article/305#%E6%A3%80%E7%B4%A2%E5%A2%9E%E5%BC%BA%E7%94%9F%E6%88%90-rag) 搜索，RAG 搜索的核心工作是：数据的收集、清洗、向量化。
 
-也就是 Agent 回答主要问题的知识库。
+RAG 也是 Agent 回答问题的主要知识库来源。
 
 ### 1. 知识库构建（NodePress → R2）
 
