@@ -16,7 +16,9 @@ export interface NodePressOptions {
 const transformOptionsToAuthorInfo = (options: NodePressOptions): string => {
   try {
     const appConfig = JSON.parse(options.app_config || '{}')
-    return appConfig.ABOUT_BIOGRAPHY_ZH || ''
+    const zh = appConfig.ABOUT_BIOGRAPHY_ZH || ''
+    const en = appConfig.ABOUT_BIOGRAPHY_EN || ''
+    return [zh, en].filter(Boolean).join('\n')
   } catch {
     return ''
   }
