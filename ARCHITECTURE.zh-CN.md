@@ -91,7 +91,7 @@ CREATE TABLE chat_messages (
 - `user`：代表人类发出的提问。
 - `assistant`：代表 AI 的回复。
 - `tool`：代表工具调用的返回结果。
-- `system`：**“造物主的指令”**（提示词），通常只在每次对话的第一条出现，对用户不可见。（例如 “你是一个代表 surmon.me 的极客助手...” 这类指令，就是以 system 角色发给模型的）
+- `system`：**"造物主的指令"**（提示词），通常只在每次对话的第一条出现，对用户不可见。（例如 "你是一个代表 surmon.me 的极客助手..." 这类指令，就是以 system 角色发给模型的）
 
 > **为什么数据库要保留 system 字段**：system prompt 通常在代码中动态组装而不持久化。保留该角色是为了支持未来可能增加的审计、A/B 测试等高级场景。
 
@@ -145,8 +145,8 @@ flowchart LR
 #### 2.1 前端首次访问
 
 1. **User** → `GET /chat/token` 必须先得到一个用于标识唯一身份的 Token。
-2. **AI Service** → `signToken(randomUUID, secret)` 使用 Secret 签名生成唯一 Token，防止伪造。
-3. **User** → 将 Token 存入前端 LocalStorage（永不变动）。
+2. **AI Service** → `signToken(randomUUID, secret)` 使用 secret 签名生成唯一 Token，防止伪造。
+3. **User** → 将 Token 存入前端 localStorage（永不变动）。
 
 ```mermaid
 flowchart LR
@@ -154,7 +154,7 @@ flowchart LR
     AIService ----> |"signToken(UUID, secret)"| Client
 
     subgraph C ["Client"]
-        Client --> |"Token"| localStorage[["LocalStorage"]]
+        Client --> |"Token"| localStorage[["localStorage"]]
     end
 ```
 
@@ -163,9 +163,9 @@ flowchart LR
 1. **User** → `POST /chat`（携带 Token + 用户消息）
 2. **AI Service** → CF 限流检查（窗口时间内 IP 请求次数）
 3. **AI Service** → 校验 Token `verifyToken` → 解析出 Session ID
-4. **AI Service** → D1 限流检查（窗口时间内 Session ID 的消息数量 + Tokens 用量）
-5. **AI Service** → 从 R2 读取必要 Markdown 文件 → 组装参数生成 System Prompt
-6. **AI Service** → D1 查询最近 <指定几轮> 历史消息（仅 User/Assistant 纯文本）
+4. **AI Service** → D1 限流检查（窗口时间内 Session ID 的消息数量 + token 用量）
+5. **AI Service** → 从 R2 读取必要 markdown 文件 → 组装参数生成 System Prompt
+6. **AI Service** → D1 查询最近 <指定几轮> 历史消息（仅 user/assistant 纯文本）
 7. **AI Service** → 组装 `inputMessages = [systemMessage, ...historyMessages, userMessage]`
 8. **AI Service** → 设置 SSE 响应头 → `stream()` 开启流式响应
    - 运行 Agent Loop：`runAgent(inputMessages)`
@@ -246,7 +246,7 @@ flowchart TD
 
 **给 LLM 的历史**
 
-经过实际测试，RAG 工具返回内容通常 1000-4000 token（具体取决于 AI Search 侧配置的 Chunk Size），带入过多历史消息会导致 token 急剧膨胀，而对上下文连贯性贡献有限。
+经过实际测试，RAG 工具返回内容通常 1000-4000 token（具体取决于 AI Search 侧配置的 chunk size），带入过多历史消息会导致 token 急剧膨胀，而对上下文连贯性贡献有限。
 
 所以当前实现策略为：只取最近 2 轮（4 条）纯文本 user/assistant 消息，由 SQL 层直接过滤 `tool_calls IS NULL`，排除所有工具调用相关消息。
 
@@ -295,7 +295,7 @@ flowchart LR
 
 #### 会话限流
 
-会话限流的主要目的，是为了防止单用户使用已验证的 Token 进行暴力请求，恶意消耗 LLM Tokens。
+会话限流的主要目的，是为了防止单用户使用已验证的 Token 进行暴力请求，恶意消耗 LLM token。
 
 会话限流采用窗口时间计算，指定窗口时间内最多允许 <指定条> 消息 / <指定量> token，实现出的效果类似于 ChatGPT 高级模型的用量限制。
 
@@ -359,12 +359,12 @@ Prompt 提示词注入测试：
 
 1. **基础设施配置**：如 Workers 所绑定的各种服务的名称、ID，要使用的 LLM 模型，之类的。都在 `wrangler.jsonc` 中配置。
 2. **应用运行时参数配置**：如 RAG 搜索配置、Agent 节流窗口时间配置... 都在 [`config.ts`](./src/config.ts) 中通过静态常量的方式配置。
-3. **需要保持加密的机密数据**：如签发验证 Token 所需要的 secrets，或者 Cloudflare 的 Token 之类的。需要通过 `wrangler secret put` 配置，或通过 Cloudflare Workers 后台配置，不出现在代码和配置文件中：
+3. **需要保持加密的机密数据**：如签发验证 Token 所需要的 secret，或者 Cloudflare 的 token 之类的。需要通过 `wrangler secret put` 配置，或通过 Cloudflare Workers 后台配置，不出现在代码和配置文件中：
 
 | 变量名              | 用途                                        |
 | ------------------- | ------------------------------------------- |
 | `CF_ACCOUNT_ID`     | Cloudflare 账户 ID，用于拼接 AI Gateway URL |
-| `CF_AIG_TOKEN`      | AI Gateway 鉴权 Token                       |
+| `CF_AIG_TOKEN`      | AI Gateway 鉴权 token                       |
 | `CHAT_TOKEN_SECRET` | 用户 Token 签发密钥                         |
 | `WEBHOOK_SECRET`    | Webhook HMAC 签名验证密钥                   |
 
