@@ -17,9 +17,9 @@ flowchart LR
     Admin(["Admin Client"]) --> |"Sessions"| API
 
     subgraph AIService ["AI Service (Workers)"]
-        API <--> D1[("D1")]
-        API --> Agent("Agent")
-        API --> R2[("R2")]
+        API <--> |"Chat Messages"| D1[("D1")]
+        API --> |"Input Messages"| Agent("Agent")
+        API <--> |"Markdown File"| R2[("R2")]
     end
 
     Agent --> |"Tool: RAG Query"| AISearch[("AI Search (Vectorize)")]
