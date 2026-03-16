@@ -65,8 +65,8 @@ src
 ```sql
 CREATE TABLE chat_messages (
   id            INTEGER  PRIMARY KEY AUTOINCREMENT,
-  session_id    TEXT     NOT NULL,        -- 由前端 Token 携带，标识一次会话
-  author_name   TEXT,                     -- 可选，前端传入的用户名
+  session_id    TEXT     NOT NULL,        -- 由前端 Token 携带，标识唯一会话
+  author_name   TEXT,                     -- 可选，前端传入的用户名称
   author_email  TEXT,                     -- 可选，前端传入的用户邮箱
   user_id       INTEGER,                  -- 可选，前端传入的用户 ID
   role          TEXT     NOT NULL CHECK(role IN ('system','user','assistant','tool')),
