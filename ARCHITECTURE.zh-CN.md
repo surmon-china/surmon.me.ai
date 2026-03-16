@@ -138,14 +138,14 @@ flowchart LR
 
 用户对话部分的完整代码实现在 [chat-user](./src/chat-user/) 文件夹中，主要业务接口有：
 
-- `GET /chat/token` 用户从服务端获取一个可用于会话的匿名 token。
-- `GET /chat/history` 用户依据 token 从服务端拉取自己最近的对话历史用于前端展示。
+- `GET /chat/token` 用户从服务端获取一个可用于会话的匿名 Token。
+- `GET /chat/history` 用户依据 Token 从服务端拉取自己最近的对话历史用于前端展示。
 - `POST /chat` 服务端 Agent Loop 处理用户的对话请求，并返回 SSE 响应。
 
 #### 前端首次访问
 
-1. **User** → `GET /chat/token` 必须先得到一个用于标识唯一身份的 token。
-2. **AI Service** → `signToken(randomUUID, secret)` 采用 secret 签名生成 token，防止伪造。
+1. **User** → `GET /chat/token` 必须先得到一个用于标识唯一身份的 Token。
+2. **AI Service** → `signToken(randomUUID, secret)` 采用 Secret 签名生成 Token，防止伪造。
 3. **User** → 将 Token 存入前端 LocalStorage（永不变动）。
 
 ```mermaid
@@ -160,12 +160,12 @@ flowchart LR
 
 #### 前端发起对话
 
-1. **User** → `POST /chat`（携带 token + 用户消息）
+1. **User** → `POST /chat`（携带 Token + 用户消息）
 2. **AI Service** → CF 限流检查（窗口时间内 IP 请求次数）
-3. **AI Service** → 校验 Token `verifyToken` → 解析出 session ID
-4. **AI Service** → D1 限流检查（窗口时间内 session ID 的消息数量 + tokens 用量）
-5. **AI Service** → 从 R2 读取必要 markdown 文件 → 组装参数生成 System Prompt
-6. **AI Service** → D1 查询最近 <指定几轮> 历史消息（仅 user/assistant 纯文本）
+3. **AI Service** → 校验 Token `verifyToken` → 解析出 Session ID
+4. **AI Service** → D1 限流检查（窗口时间内 Session ID 的消息数量 + Tokens 用量）
+5. **AI Service** → 从 R2 读取必要 Markdown 文件 → 组装参数生成 System Prompt
+6. **AI Service** → D1 查询最近 <指定几轮> 历史消息（仅 User/Assistant 纯文本）
 7. **AI Service** → 组装 `inputMessages = [systemMessage, ...historyMessages, userMessage]`
 8. **AI Service** → 设置 SSE 响应头 → `stream()` 开启流式响应
    - 运行 Agent Loop：`runAgent(inputMessages)`
