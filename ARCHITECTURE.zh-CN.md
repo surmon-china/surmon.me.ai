@@ -113,7 +113,7 @@ AI Search 的产品架构为：
 
 AI Search 支持两种数据源：
 
-- **爬虫（Sitemap/Crawler）**：操作简单易上手，但抓取的是 HTML 且只包含首屏内容，对分段渲染的长文章无能为力。更重要的是，爬虫无法区分正文、侧边栏、评论、AI Review 等 UI 元素，这些元素无法被完全干净地过滤掉从而产生数据噪音，这些噪音会污染 Embedding 的向量空间，导致严重的召回质量问题。
+- **爬虫（Sitemap/Crawler）**：操作简单易上手，但抓取的是 HTML 且只包含首屏内容，对分段渲染的长文章无能为力。更重要的是，爬虫无法精准地区分正文、侧边栏、评论、AI Review 等各种不同的 UI 元素，这些元素无法被完全干净地过滤掉从而产生数据噪音，这些噪音会污染 Embedding 的向量空间，导致严重的召回质量问题。
 - **R2 存储桶**：主动维护 Markdown 文件在 R2 存储桶中作为数据源，内容 100% 可控，可剥离所有 UI 噪音，支持完整长文，并通过 Frontmatter 赋予模型结构化的元数据上下文。
 
 本项目在多维度测试后，使用 **R2 方案**，通过 [NodePress Webhook](https://github.com/surmon-china/nodepress/tree/main/src/modules/webhook) 在内容变更时主动通知 AI Service，AI 服务在验证来源后，实时将数据同步到 R2，AI Search 随后完成增量索引。
