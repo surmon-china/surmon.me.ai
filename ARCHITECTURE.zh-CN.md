@@ -56,7 +56,7 @@ src
     ├── agent/         # Agent Loop 的核心实现
     ├── signature/     # 用户 Token 签发与验证
     ├── prompt.ts      # System Prompt 生成
-    ├── tools.ts       # Agent 工具定义
+    ├── tools.ts       # Agent 工具能力定义
     └── database/      # Agent 与 D1 数据库的桥接层
 ```
 
