@@ -72,6 +72,25 @@ export const getAgentTools = (env: Env) => ({
     }
   }),
 
+  getTravelFootprint: defineTool({
+    description:
+      "Fetch the author's travel footprint, including all trips and route segments with transport types.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch('https://static.surmon.me/data/footprint-trips.json')
+      if (!response.ok) throw new Error(`Failed to fetch travel footprint: ${response.status}`)
+      const trips = await response.json<Array<any>>()
+      return trips.map((trip) => ({
+        id: trip.id,
+        name: trip.name,
+        segments: trip.segments.map((segment: any) => ({
+          name: segment.name,
+          transport: segment.transport
+        }))
+      }))
+    }
+  }),
+
   askKnowledgeBase: defineTool({
     description: 'Search the blog knowledge base and return relevant excerpts.',
     inputSchema: z.object({
