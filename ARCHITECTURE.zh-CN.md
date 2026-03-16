@@ -357,16 +357,18 @@ Prompt 提示词注入测试：
 
 整个项目的运行配置大概分为三类：
 
-1. **基础设施配置**：如 Workers 所绑定的各种服务的名称、ID，要使用的 LLM 模型，之类的。都在 `wrangler.jsonc` 中配置。
-2. **应用运行时参数配置**：如 RAG 搜索配置、Agent 节流窗口时间配置... 都在 [`config.ts`](./src/config.ts) 中通过静态常量的方式配置。
-3. **需要保持加密的机密数据**：如签发验证 Token 所需要的 secret，或者 Cloudflare 的 token 之类的。需要通过 `wrangler secret put` 配置，或通过 Cloudflare Workers 后台配置，不出现在代码和配置文件中：
+1. **基础设施配置**：如 Workers 所绑定的各种服务的名称、ID、要使用的 LLM 模型... 都在 [`wrangler.jsonc`](./wrangler.jsonc) 中配置。
+2. **运行时参数配置**：如 RAG 搜索配置、Agent 节流窗口时间配置... 都在 [`config.ts`](./src/config.ts) 中通过静态常量的方式配置。
+3. **需要保持加密的机密数据**：如签发验证 Token 所需要的 secret，或者 AI Gateway 的 token 之类的。需要通过 [`wrangler secret put`](https://developers.cloudflare.com/workers/configuration/secrets/) 配置，或通过 Cloudflare Workers 管理后台配置，不出现在代码和配置文件中。
 
-| 变量名              | 用途                                        |
-| ------------------- | ------------------------------------------- |
-| `CF_ACCOUNT_ID`     | Cloudflare 账户 ID，用于拼接 AI Gateway URL |
-| `CF_AIG_TOKEN`      | AI Gateway 鉴权 token                       |
-| `CHAT_TOKEN_SECRET` | 用户 Token 签发密钥                         |
-| `WEBHOOK_SECRET`    | Webhook HMAC 签名验证密钥                   |
+目前项目中涉及到的机密数据如下：
+
+| 变量名              | 用途                                                                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `CF_ACCOUNT_ID`     | [Cloudflare 账户 ID](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/) 用于拼接 AI Gateway URL   |
+| `CF_AIG_TOKEN`      | [Cloudflare AI Gateway 身份验证令牌](https://developers.cloudflare.com/ai-gateway/configuration/authentication/)                  |
+| `CHAT_TOKEN_SECRET` | 用户 Token 签发所需要的密钥                                                                                                       |
+| `WEBHOOK_SECRET`    | Webhook HMAC 签名验证密钥（需要与 [NodePress](https://github.com/surmon-china/nodepress/blob/main/src/app.config.ts) 侧保持一致） |
 
 ## 部署与初始化
 
@@ -391,7 +393,7 @@ npx wrangler d1 execute <database_name> --remote --file=./src/database/schema.sq
 - 嵌入模型：`@cf/qwen/qwen3-embedding-0.6b`
 - 区块大小：512 tokens
 - 区块重叠：15%
-- 重排序模型：`@cf/baai/bge-reranker-base`
+- 重排模型：`@cf/baai/bge-reranker-base`
 
 ### 4. 配置 AI Gateway
 
@@ -399,8 +401,11 @@ npx wrangler d1 execute <database_name> --remote --file=./src/database/schema.sq
 
 推荐配置：
 
-- 速率限制：滑动窗口，150-300 次 / 小时
-- 酌情开启 Guardrails 内容审核（开启后会增加总成本）
+- [启用日志收集](https://developers.cloudflare.com/ai-gateway/observability/logging/)
+- [启用身份验证](https://developers.cloudflare.com/ai-gateway/configuration/authentication/)
+- [启用缓存响应](https://developers.cloudflare.com/ai-gateway/features/caching/)
+- [速率限制](https://developers.cloudflare.com/ai-gateway/features/rate-limiting/)：滑动窗口，150-300 次 / 小时
+- 酌情开启 [Guardrails](https://developers.cloudflare.com/ai-gateway/features/guardrails/) 内容审核（开启后会增加总成本）
 
 ### 5. 配置 Secrets
 
