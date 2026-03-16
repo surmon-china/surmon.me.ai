@@ -2,11 +2,15 @@
 
 [English](./ARCHITECTURE.md)｜[简体中文](./ARCHITECTURE.zh-CN.md)
 
+本文档旨在帮助开发者理解 **surmon.me.ai** 的设计哲学、技术栈实现与核心数据流。
+
 **surmon.me.ai** 是为 [surmon.me](https://github.com/stars/surmon-china/lists/surmon-me) 生态构建的自包含 AI Agent 服务，基于 Tool-driven 的 Agent 架构，将 CMS 系统（NodePress）、前端网站（Surmon.me）与外部知识源统一串联整合，提供智能对话能力。
 
 该项目遵循 **高内聚、低耦合** 的设计原则，在保持自身独立迭代的同时，与生态中的其他系统维持清晰、稳定的协作边界。
 
-本文档旨在帮助开发者理解 **surmon.me.ai** 的设计哲学、技术栈实现与核心数据流。
+- **基础设施原生**：全栈基于 Cloudflare 原生组件（Workers、D1、R2、AI Search），无自建中间件，最大程度降低运维复杂度。
+- **工具驱动**：LLM 只作为协调调度者，所有真实数据通过工具按需获取，职责边界清晰。
+- **知识管道解耦**：RAG 知识库的写入（Webhook）与运行时对话完全分离，互不影响，便于独立扩展。
 
 ---
 
@@ -167,18 +171,21 @@ flowchart LR
 5. **AI Service** → 从 R2 读取必要 markdown 文件 → 组装参数生成 System Prompt
 6. **AI Service** → D1 查询最近 <指定轮次> 历史消息（仅 user/assistant 纯文本）
 7. **AI Service** → 组装 `inputMessages = [systemMessage, ...historyMessages, userMessage]`
-8. **AI Service** → 设置 SSE 响应头 → `stream()` 开启流式响应
-   - 运行 Agent Loop：`runAgent(inputMessages)`
-   - 初次调用模型：`callModel → AI Gateway compat → LLM`
-   - 格式化并将流推至前端：`parseModelStream` 解析 SSE 流
-   - 处理文本流：`delta → emit { type: 'text', content }`
-   - 处理工具调用（如果需要）：并发执行所有工具
-     - 调用工具开始：`emit { type: 'tool_start', id, name }`
-     - 调用工具结束：`emit { type: 'tool_end', id }`
-   - 携带工具结果再次：`callModel`（最多 <指定轮次>）
-   - 如果执行的工具次数超出了指定限制，则派发错误事件：`emit { type: 'error', message }`
-   - 派发完成事件：`emit { type: 'done' }`
-     - 同时异步写入 D1 数据库：`waitUntil(saveMessages(...))`
+8. **AI Service** → 设置 SSE 响应头 → `stream()` 开启流式响应 + 运行 Agent Loop。
+
+Agent Loop 的核心逻辑是：**调用模型 → 解析工具调用 → 并发执行工具 → 追加工具结果 → 再次调用模型，循环直到无工具调用或达到最大步数为止。**
+
+1. 运行 Agent Loop：`runAgent(inputMessages)`
+2. 初次调用模型：`callModel → AI Gateway compat → LLM`
+3. 格式化并将流推至前端：`parseModelStream` 解析 SSE 流
+4. 处理文本流：`delta → emit { type: 'text', content }`
+5. 处理工具调用（如果需要）：并发执行所有工具
+   - 调用工具开始：`emit { type: 'tool_start', id, name }`
+   - 调用工具结束：`emit { type: 'tool_end', id }`
+6. 携带工具结果再次：`callModel`（最多 <指定轮次>）
+7. 如果执行的工具次数超出了指定限制，则派发错误事件：`emit { type: 'error', message }`
+8. 派发完成事件：`emit { type: 'done' }`
+   - 同时异步写入 D1 数据库：`waitUntil(saveMessages(...))`
 
 ```mermaid
 flowchart TD
