@@ -103,7 +103,7 @@ RAG 也是 Agent 回答问题的主要知识来源。
 
 ### 1. 知识库构建（NodePress → R2）
 
-[Cloudflare AI Search](https://developers.cloudflare.com/ai-search/) 是对多项 Cloudflare 基础能力的整合封装，它可以简洁地将一个数据源接入 RAG 搜索。
+[Cloudflare AI Search](https://developers.cloudflare.com/ai-search/) 是对多项 Cloudflare 基础能力的整合封装，它的能力是：简洁地将一个数据源接入 RAG 搜索。
 
 AI Search 的产品架构为：
 
