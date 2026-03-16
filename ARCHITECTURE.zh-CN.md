@@ -118,6 +118,8 @@ AI Search 支持两种数据源：
 
 本项目在多维度测试后，使用 **R2 方案**，通过 [NodePress Webhook](https://github.com/surmon-china/nodepress/tree/main/src/modules/webhook) 在内容变更时主动通知 AI Service，AI 服务在验证来源后，实时将数据同步到 R2，AI Search 随后完成增量索引。
 
+最终实现的效果是：**管理员在上游正常增删改查博客数据，所有的数据变动都会在后台自动流动至 RAG 知识库中，全程无需手动运维。**
+
 核心的代码实现在 [webhook](./src/webhook/) 文件夹中。
 
 ```mermaid
