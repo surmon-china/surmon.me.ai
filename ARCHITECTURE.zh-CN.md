@@ -122,12 +122,14 @@ AI Search 支持两种数据源：
 
 ```mermaid
 flowchart LR
-    NodePress(["NodePress"]) --> |"POST /webhook <br> HMAC-SHA256"| AIService("AI Service")
-    subgraph AI ["AI Service"]
-        AIService --> |"Signature invalid → Reject"| STOP(("✕"))
-        AIService --> |"Signature valid → Resolve <br> Put markdown → R2"| R2("R2 Bucket")
+    NodePress(["NodePress"]) --> |"POST /webhook <br> HMAC-SHA256"| API
+    subgraph AIService ["AI Service"]
+        API --> |"Signature invalid → Reject"| STOP(("✕"))
+        API --> |"Signature valid → Resolve <br> Put markdown → R2"| R2[("R2 Bucket")]
     end
+    subgraph AISearch ["AI Search"]
      R2 -.-> |"R2 Changed"| RAG("RAG Indexing")
+    end
 ```
 
 ### 2. 用户对话（POST /chat）
