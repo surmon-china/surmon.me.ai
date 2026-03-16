@@ -157,8 +157,8 @@ flowchart LR
 #### 前端发起对话
 
 1. **User** → `POST /chat`（携带 token + 用户消息）
-2. **AI Service** → 校验 Token `verifyToken` → 解析出 session ID
-3. **AI Service** → CF 限流检查（窗口时间内 IP 请求次数）
+2. **AI Service** → CF 限流检查（窗口时间内 IP 请求次数）
+3. **AI Service** → 校验 Token `verifyToken` → 解析出 session ID
 4. **AI Service** → D1 限流检查（窗口时间内 session ID 的消息数量 + tokens 用量）
 5. **AI Service** → 从 R2 读取必要 markdown 文件 → 组装参数生成 System Prompt
 6. **AI Service** → D1 查询最近 <指定几轮> 历史消息（仅 user/assistant 纯文本）
