@@ -165,7 +165,7 @@ flowchart LR
 3. **AI Service** → 校验 Token `verifyToken` → 解析出 Session ID
 4. **AI Service** → D1 限流检查（窗口时间内 Session ID 的消息数量 + LLM token 用量）
 5. **AI Service** → 从 R2 读取必要 markdown 文件 → 组装参数生成 System Prompt
-6. **AI Service** → D1 查询最近 <指定几轮> 历史消息（仅 user/assistant 纯文本）
+6. **AI Service** → D1 查询最近 <指定轮次> 历史消息（仅 user/assistant 纯文本）
 7. **AI Service** → 组装 `inputMessages = [systemMessage, ...historyMessages, userMessage]`
 8. **AI Service** → 设置 SSE 响应头 → `stream()` 开启流式响应
    - 运行 Agent Loop：`runAgent(inputMessages)`
