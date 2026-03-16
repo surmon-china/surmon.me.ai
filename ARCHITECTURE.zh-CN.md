@@ -377,6 +377,17 @@ Prompt 提示词注入测试：
 | `CHAT_TOKEN_SECRET` | 用户 Token 签发所需要的密钥                                                                                                       |
 | `WEBHOOK_SECRET`    | Webhook HMAC 签名验证密钥（需要与 [NodePress](https://github.com/surmon-china/nodepress/blob/main/src/app.config.ts) 侧保持一致） |
 
+## 模型选择
+
+目前使用 **DeepSeek** 作为主力模型，**Gemini 2.5 Flash** 作为备选。
+
+两者在实际工程场景中表现出截然不同的调校风格：
+
+- **DeepSeek 推理欲望强，会主动突破软约束穷尽意图**，在 RAG 场景下倾向于多轮调用工具，token 消耗偏高，但中文语境下效果出色，且成本极低。
+- **Gemini 则极度克制，严格遵循指令约束，走最短路径完成任务**，token 消耗低，但回答有时过于简略，甚至在同样的提示词下表现得比较「懒惰」。
+
+针对 DeepSeek 的工程调优重点是在代码层硬限制工具调用次数，防止循环贪婪导致 token 激增；如果切换至 Gemini，则需要在 System Prompt 中显式加入发散性指令，避免回答过于保守。
+
 ## 部署与初始化
 
 ### 1. 新建 R2 存储桶
