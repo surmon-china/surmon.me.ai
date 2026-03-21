@@ -40,15 +40,13 @@ const transformArticleToMarkdown = (article: NodePressArticle): string => {
 
   return [
     `---`,
-    ``,
     `id: ${article.id}`,
     `title: "${safeStr(article.title)}"`,
-    `summary: "${getArticleSummary(article)}"`,
+    `summary: "${safeStr(getArticleSummary(article))}"`,
     `categories: [${article.categories.map((i) => `"${i.slug}"`).join(', ')}]`,
     `tags: [${article.tags.map((i) => `"${i.slug}"`).join(', ')}]`,
     `date: "${article.created_at}"`,
     `url: "${getArticleUrl(article.id)}"`,
-    ``,
     `---`,
     ``,
     `# ${article.title}`,
