@@ -46,7 +46,7 @@ const transformArticleToMarkdown = (article: NodePressArticle): string => {
     `summary: "${getArticleSummary(article)}"`,
     `categories: [${article.categories.map((i) => `"${i.slug}"`).join(', ')}]`,
     `tags: [${article.tags.map((i) => `"${i.slug}"`).join(', ')}]`,
-    `date: "${article.created_at || new Date().toISOString()}"`,
+    `date: "${article.created_at}"`,
     `url: "${getArticleUrl(article.id)}"`,
     ``,
     `---`,
@@ -79,6 +79,7 @@ export const upsertArticlesToBucket = async (articles: NodePressArticle[], env: 
         id: String(newArticle.id),
         title: newArticle.title,
         thumbnail: newArticle.thumbnail,
+        created_at: newArticle.created_at,
         url: getArticleUrl(newArticle.id)
       }
     })

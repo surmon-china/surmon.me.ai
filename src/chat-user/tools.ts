@@ -116,6 +116,7 @@ export const getAgentTools = (env: Env) => ({
         article_id: chunk.item.metadata!.id,
         article_url: chunk.item.metadata!.url,
         article_title: chunk.item.metadata!.title,
+        article_date: chunk.item.metadata!.created_at ?? null,
         excerpt: chunk.text.slice(0, CONFIG.CHAT_AGENT_RAG_CHUNK_MAX_LENGTH)
       }))
     }
