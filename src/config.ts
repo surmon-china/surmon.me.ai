@@ -16,7 +16,7 @@ export const CHAT_AGENT_USER_MESSAGE_MAX_LENGTH = 300
 
 // Maximum number of agentic tool-call iterations per request.
 // Prevents infinite loops in multi-step tool chains.
-export const CHAT_AGENT_TOOL_CALL_MAX_STEPS = 4
+export const CHAT_AGENT_TOOL_CALL_MAX_STEPS = 5
 
 // Maximum number of conversation rounds passed to the model as context history.
 // Tool-related messages are excluded; each round counts as one user + one assistant message.
