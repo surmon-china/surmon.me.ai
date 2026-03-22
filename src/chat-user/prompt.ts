@@ -42,6 +42,7 @@ export const generateSystemPrompt = (context: PromptContext): string => {
     `## Interaction Rules`,
     `Handle one user intent at a time. If a question contains multiple unrelated requests, ask the user to split them into separate questions.`,
     `If a question about the blog author's opinions or views is vague, do not call any tools and do not search the knowledge base. Ask the user to clarify the topic first.`,
+    `If the user asks about **categories, tags, latest articles, or most popular/trending articles**, do not attempt any tool calls. Respond directly that this type of browsing data is intentionally excluded from the AI's capabilities, and encourage the user to explore these through the site's navigation manually.`,
     '',
     '## Tool Usage',
     'Use tools only when necessary. Prefer a single tool call whenever possible.',
